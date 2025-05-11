@@ -47,21 +47,21 @@ export function Sidebar() {
 		setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
 	};
 
-	useEffect(() => {
-		// Keep collapsible open, when its subpage is active
-		NAV_DATA.some((section) => {
-			return section.items.some((item) => {
-				return item.items.some((subItem) => {
-					if (subItem.url === pathname) {
-						if (!expandedItems.includes(item.title)) {
-							toggleExpanded(item.title);
-						}
-						return true; // Break the loop
-					}
-				});
-			});
-		});
-	}, [pathname]);
+	// useEffect(() => {
+	// 	// Keep collapsible open, when its subpage is active
+	// 	NAV_DATA.some((section) => {
+	// 		return section.items.some((item) => {
+	// 			return item.items.some((subItem) => {
+	// 				if (subItem.url === pathname) {
+	// 					if (!expandedItems.includes(item.title)) {
+	// 						toggleExpanded(item.title);
+	// 					}
+	// 					return true; // Break the loop
+	// 				}
+	// 			});
+	// 		});
+	// 	});
+	// }, [pathname]);
 
 	return (
 		<>
