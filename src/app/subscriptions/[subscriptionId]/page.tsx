@@ -19,7 +19,7 @@ type Subscription = {
 
 export default function SubscriptionDetailsPage() {
   const params = useParams(); // Use useParams to unwrap params
-  const subscriptionId = params.subscriptionId; // Access subscriptionId from unwrapped params
+  const subscriptionId = typeof params.subscriptionId === "string" ? params.subscriptionId : ""; // Ensure subscriptionId is a string
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function SubscriptionDetailsPage() {
         const response = await databases.getDocument(
           process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
           process.env.NEXT_PUBLIC_SUBSCRIPTIONS_COLLECTION_ID!,
-          subscriptionId
+          subscriptionId || ""
         );
 
         setSubscription({
