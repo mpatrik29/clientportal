@@ -9,7 +9,7 @@ import { account, databases, ID } from "@/app/appwrite";
 import { Permission, Role } from "appwrite";
 
 export default function SignupWithPassword() {
- 
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
