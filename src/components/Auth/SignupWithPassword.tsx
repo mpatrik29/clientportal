@@ -63,7 +63,7 @@ export default function SignupWithPassword() {
 
       // Fetch and set the logged-in user's info
       const user = await account.get();
-      setLoggedInUser(user);
+      
     } catch (error) {
       console.error("Error during login:", error);
     }
