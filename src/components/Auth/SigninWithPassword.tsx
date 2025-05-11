@@ -9,7 +9,7 @@ import { account, databases } from "@/app/appwrite";
 import { Query } from "appwrite";
 
 export default function SigninWithPassword() {
-  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState<any>(null); // Fixed type for loggedInUser
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -30,7 +30,7 @@ export default function SigninWithPassword() {
   const login = async (email: string, password: string) => {
     try {
       // Create a session for the user
-      const session = await account.createEmailPasswordSession(email, password);
+      const session = await account.createEmailSession(email, password); // Fixed method name
 
       // Fetch the logged-in user's details
       const user = await account.get();
@@ -69,7 +69,7 @@ export default function SigninWithPassword() {
         className="mb-4 [&_input]:py-[15px]"
         placeholder="Enter your email"
         name="email"
-        onChange={(e) => setEmail(e.target.value)} // Updated to use onChange
+        onChange={(e) => setEmail(e.target.value)}
         value={email}
         icon={<EmailIcon />}
       />
@@ -80,7 +80,7 @@ export default function SigninWithPassword() {
         className="mb-5 [&_input]:py-[15px]"
         placeholder="Enter your password"
         name="password"
-        onChange={(e) => setPassword(e.target.value)} // Updated to use onChange
+        onChange={(e) => setPassword(e.target.value)}
         value={password}
         icon={<PasswordIcon />}
       />
@@ -92,7 +92,7 @@ export default function SigninWithPassword() {
           withIcon="check"
           minimal
           radius="md"
-          onChange={(e) => setRemember(e.target.checked)} // Updated to setRemember
+          onChange={(e) => setRemember(e.target.checked)}
         />
 
         <Link

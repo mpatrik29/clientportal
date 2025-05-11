@@ -6,10 +6,10 @@ import React, { useState } from "react";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
 import { account, databases, ID } from "@/app/appwrite";
-import { Permission, Query, Role } from "appwrite";
+import { Permission, Role } from "appwrite";
 
 export default function SignupWithPassword() {
-  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState<User<Preferences> | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -20,11 +20,13 @@ export default function SignupWithPassword() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Create a new user
       await account.create(ID.unique(), email, password, name);
+
+      // Log in the user
       await login(email, password);
 
-
-       // 3. Get the logged-in user's info (includes user.$id)
+      // Get the logged-in user's info
       const user = await account.get();
       setLoggedInUser(user);
 
@@ -33,8 +35,7 @@ export default function SignupWithPassword() {
       localStorage.setItem("email", user.email);
       localStorage.setItem("userId", user.$id);
 
-      
-      // 4. Create the user_roles document with userId and role
+      // Create the user_roles document with userId and role
       await databases.createDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
         process.env.NEXT_PUBLIC_USER_ROLES_COLLECTION_ID!,
@@ -46,12 +47,8 @@ export default function SignupWithPassword() {
         [Permission.read(Role.user(user.$id)), Permission.write(Role.user(user.$id))]
       );
 
-      
-        // Redirect to /dashboard
-        window.location.href = "/dashboard";
-
-      
-
+      // Redirect to /dashboard
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error during signup:", error);
     } finally {
@@ -61,11 +58,12 @@ export default function SignupWithPassword() {
 
   const login = async (email: string, password: string) => {
     try {
-      const session = await account.createEmailPasswordSession(email, password);
-      setLoggedInUser(await account.get());
-      // redirect to /dashboard use next/navigation
+      // Create a session for the user
+      await account.createEmailSession(email, password);
 
-
+      // Fetch and set the logged-in user's info
+      const user = await account.get();
+      setLoggedInUser(user);
     } catch (error) {
       console.error("Error during login:", error);
     }
