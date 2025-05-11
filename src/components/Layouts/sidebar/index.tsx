@@ -83,7 +83,7 @@ export function Sidebar() {
 				<div
 					className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300"
 					onClick={() => setIsOpen(false)}
-					aria-hidden="true"
+					aria-hidden={true} // Fixed: Pass boolean instead of string
 				/>
 			)}
 
@@ -94,7 +94,7 @@ export function Sidebar() {
 					isOpen ? "w-full" : "w-0",
 				)}
 				aria-label="Main navigation"
-				aria-hidden={!isOpen}
+				aria-hidden={!isOpen} // Fixed: Pass boolean instead of string
 				inert={!isOpen}
 			>
 				<div className="flex h-full flex-col py-10 pl-[25px] pr-[7px]">
@@ -113,7 +113,7 @@ export function Sidebar() {
 								className="absolute left-3/4 right-4.5 top-1/2 -translate-y-1/2 text-right"
 							>
 								<span className="sr-only">Close Menu</span>
-								<ArrowLeftIcon className="ml-auto size-7" />
+								<ArrowLeftIcon className="ml-auto size-7" aria-hidden={true} /> {/* Fixed */}
 							</button>
 						)}
 					</div>
@@ -140,7 +140,7 @@ export function Sidebar() {
 														>
 															<item.icon
 																className="size-6 shrink-0"
-																aria-hidden="true"
+																aria-hidden={true} // Fixed
 															/>
 
 															<span>{item.title}</span>
@@ -151,7 +151,7 @@ export function Sidebar() {
 																	expandedItems.includes(item.title) &&
 																		"rotate-0",
 																)}
-																aria-hidden="true"
+																aria-hidden={true} // Fixed
 															/>
 														</MenuItem>
 
@@ -183,7 +183,7 @@ export function Sidebar() {
 													>
 														<item.icon
 															className="size-6 shrink-0"
-															aria-hidden="true"
+															aria-hidden={true} // Fixed
 														/>
 
 														<span>{item.title}</span>
