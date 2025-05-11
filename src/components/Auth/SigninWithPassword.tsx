@@ -9,7 +9,7 @@ import { account, databases } from "@/app/appwrite";
 import { Query } from "appwrite";
 
 export default function SigninWithPassword() {
-  const [loggedInUser, setLoggedInUser] = useState<any>(null); // Fixed type for loggedInUser
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -30,11 +30,11 @@ export default function SigninWithPassword() {
   const login = async (email: string, password: string) => {
     try {
       // Create a session for the user
-      const session = await account.createEmailSession(email, password); // Fixed method name
+      const session = await account.createEmailPasswordSession(email, password); // Fixed method name
 
       // Fetch the logged-in user's details
       const user = await account.get();
-      setLoggedInUser(user);
+      
 
       // Store Name, Email, and UserId in localStorage
       localStorage.setItem("name", user.name);
