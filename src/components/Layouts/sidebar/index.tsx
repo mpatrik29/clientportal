@@ -9,7 +9,20 @@ import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
 
-const NAV_DATA = [
+// Define the type for NAV_DATA
+type NavItem = {
+	title: string;
+	url: string;
+	icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+	items: NavItem[]; // Recursive type for sub-items
+};
+
+type NavSection = {
+	label: string;
+	items: NavItem[];
+};
+
+const NAV_DATA: NavSection[] = [
 	{
 		label: "Main",
 		items: [
@@ -47,21 +60,21 @@ export function Sidebar() {
 		setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
 	};
 
-	// useEffect(() => {
-	// 	// Keep collapsible open, when its subpage is active
-	// 	NAV_DATA.some((section) => {
-	// 		return section.items.some((item) => {
-	// 			return item.items.some((subItem) => {
-	// 				if (subItem.url === pathname) {
-	// 					if (!expandedItems.includes(item.title)) {
-	// 						toggleExpanded(item.title);
-	// 					}
-	// 					return true; // Break the loop
-	// 				}
-	// 			});
-	// 		});
-	// 	});
-	// }, [pathname]);
+	useEffect(() => {
+		// Keep collapsible open when its subpage is active
+		NAV_DATA.some((section) => {
+			return section.items.some((item) => {
+				return item.items.some((subItem) => {
+					if (subItem.url === pathname) {
+						if (!expandedItems.includes(item.title)) {
+							toggleExpanded(item.title);
+						}
+						return true; // Break the loop
+					}
+				});
+			});
+		});
+	}, [pathname]);
 
 	return (
 		<>
