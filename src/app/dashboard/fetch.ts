@@ -4,7 +4,7 @@ export async function getOverviewData() {
 
   return {
     views: {
-      value: 3456,
+      value: 12,
       growthRate: 0.43,
     },
     profit: {

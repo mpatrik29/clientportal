@@ -10,6 +10,7 @@ import { OverviewCardsGroup } from "./_components/overview-cards";
 import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
 import { RegionLabels } from "./_components/region-labels";
 import TradingViewWidget from "@/components/Charts/tradingview/TradingViewWidget";
+import StatusCards from "@/components/Dashboard/StatusCards";
 
 type PropsType = {
   searchParams: Promise<{
@@ -23,13 +24,13 @@ export default async function Home({ searchParams }: PropsType) {
 
   return (
     <>
+      
       <Suspense fallback={<OverviewCardsSkeleton />}>
         <OverviewCardsGroup />
       </Suspense>
-
-      <div className="h-screen w-full p-4 gap-4 md:p-6 2xl:p-10">
-        <TradingViewWidget />
-    </div>
+      <div>
+        
+      </div>
     </>
   );
 }

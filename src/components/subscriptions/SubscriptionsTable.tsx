@@ -30,7 +30,7 @@ export default function SubscriptionsTable() {
         const jwt = await account.createJWT();
         
         // Call your Appwrite function endpoint
-        const response = await fetch('http://6820639972b7e0ad7171.fra.appwrite.run/subscription', {
+        const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
