@@ -2,14 +2,29 @@
 
 import React, { useEffect, useState } from "react";
 import PlanCard from "./PlanCard";
-import Modal from "@/components/ui/modal"; // Import the Modal component
+import Modal from "@/components/ui/modal";
 import { databases } from "@/app/appwrite";
+import { Models } from "appwrite";
+
+// Define the interface for your investment plan
+interface InvestmentPlan {
+  $id: string;
+  planName: string;
+  planType: string;
+  investmentMode: string;
+  minimumInvestment: number;
+  lockinPeriod: number;
+  investmentCycle: string;
+  investmentPeriod: number;
+  bonusPercentage: number;
+  // Add any other fields that exist in your documents
+}
 
 export default function PlansList() {
-  const [plans, setPlans] = useState([]);
+  const [plans, setPlans] = useState<InvestmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState<InvestmentPlan | null>(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -18,8 +33,10 @@ export default function PlansList() {
           process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
           process.env.NEXT_PUBLIC_PLANS_COLLECTION_ID!
         );
-        console.log(response);
-        setPlans(response.documents);
+
+        // Type assertion that the documents match our InvestmentPlan interface
+        const fetchedPlans = response.documents as unknown as InvestmentPlan[];
+        setPlans(fetchedPlans);
       } catch (error) {
         console.error("Error fetching plans:", error);
       } finally {
@@ -30,37 +47,36 @@ export default function PlansList() {
     fetchPlans();
   }, []);
 
-  const handleSubscribe = (plan: any) => {
-    setSelectedPlan(plan); // Set the selected plan
-    setIsModalOpen(true); // Open the modal
+  const handleSubscribe = (plan: InvestmentPlan) => {
+    setSelectedPlan(plan);
+    setIsModalOpen(true);
   };
 
   if (loading) {
-    return <p>Loading plans...</p>;
+    return <div className="text-center py-8">Loading plans...</div>;
   }
 
   if (plans.length === 0) {
-    return <p>No plans available.</p>;
+    return <div className="text-center py-8">No plans available.</div>;
   }
 
   return (
-    <div>
-      <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => (
           <PlanCard
             key={plan.$id}
             plan={plan}
-            onSubscribe={() => handleSubscribe(plan)} // Pass the plan to the handler
+            onSubscribe={() => handleSubscribe(plan)}
           />
         ))}
       </div>
 
-      {/* Modal Component */}
       {selectedPlan && (
         <Modal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)} // Close the modal
-          plan={selectedPlan} // Pass the selected plan to the modal
+          onClose={() => setIsModalOpen(false)}
+          plan={selectedPlan}
         />
       )}
     </div>

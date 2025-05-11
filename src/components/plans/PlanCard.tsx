@@ -1,5 +1,5 @@
 import React from "react";
-
+import { InvestmentPlan } from "@/types";
 // a single card to show the plan details
 // plan details include
 // - plan name
@@ -12,17 +12,7 @@ import React from "react";
 // - maturity bonus
 
 type PlanCardProps = {
-  plan: {
-    $id: string;
-    planName: string;
-    planType: string;
-    investmentMode: string;
-    minimumInvestment: number;
-    lockinPeriod: number;
-    investmentCycle: string;
-    investmentPeriod: number;
-    bonusPercentage: number;
-  };
+  plan: InvestmentPlan;
   onSubscribe: (planId: string) => void;
 };
 

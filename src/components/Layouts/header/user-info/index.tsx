@@ -9,18 +9,27 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
 import { account } from "@/app/appwrite";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const USER = {
-    name: localStorage.getItem("name") || "John Doe",
-    email: localStorage.getItem("email") || "",
+  const [USER, setUSER] = useState({
+    name: "John Doe",
+    email: "",
     img: "/images/user/user-03.png",
-  };
+  });
+
+  useEffect(() => {
+    // Fetch user data from localStorage when the component mounts
+    const name = localStorage.getItem("name") || "John Doe";
+    const email = localStorage.getItem("email") || "";
+    const img = "/images/user/user-03.png"; // Default image path
+
+    setUSER({ name, email, img });
+  }, []);
 
   const logout = async () => {
     await account.deleteSession("current");

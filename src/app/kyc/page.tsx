@@ -6,6 +6,7 @@ import { TopChannels } from "@/components/Tables/top-channels";
 import { TopChannelsSkeleton } from "@/components/Tables/top-channels/skeleton";
 import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
 import { Suspense } from "react";
+import KycForm from "@/components/Kyc/KycForm"; // Import the KYCForm component
 
 type PropsType = {
   searchParams: Promise<{
@@ -25,7 +26,7 @@ export default async function Home({ searchParams }: PropsType) {
 
         
 
-        
+        <KycForm />
 
         
 

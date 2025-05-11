@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { databases, account } from "@/app/appwrite";
 
 type Plan = {
@@ -30,7 +30,13 @@ export default function Modal({ isOpen, onClose, plan }: ModalProps) {
 
     try {
       // Get the userDocId from localStorage
-      const userId = localStorage.getItem("userId");
+      const [userId, setUserId] = useState<string | null>(null);
+
+      useEffect(() => {
+        // Fetch the userId from localStorage when the component mounts
+        const storedUserId = localStorage.getItem("userId");
+        setUserId(storedUserId);
+      }, []);
       if (!userId) {
         throw new Error("User document ID not found in localStorage.");
       }
