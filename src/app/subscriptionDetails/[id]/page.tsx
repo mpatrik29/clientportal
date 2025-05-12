@@ -7,11 +7,15 @@ import SubscriptionsTable from "@/components/subscriptions/SubscriptionsTable";
 import { TopChannels } from "@/components/Tables/top-channels";
 import { TopChannelsSkeleton } from "@/components/Tables/top-channels/skeleton";
 import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
+import { useParams } from "next/navigation";
 import { Suspense } from "react";
 
 
 
 export default async function Home() {
+  const params = useParams();
+  const subscriptionId = params.id as string;
+  
   return (
     <>
     <div className="card shadow-sm bg-white rounded-lg p-3">
@@ -47,7 +51,7 @@ export default async function Home() {
             </div>
             <div className="card-body">
                 
-                    <SubscriptionPaymentCard/>
+                    <SubscriptionPaymentCard />
                     
                     
                 

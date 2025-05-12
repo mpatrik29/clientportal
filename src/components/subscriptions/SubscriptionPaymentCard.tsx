@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { account } from "@/app/appwrite";
-import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 type Subscription = {
   $id: string;
@@ -23,11 +23,18 @@ type PaymentDetail = {
   status: "Pending" | "Completed";
 };
 
-export default function SubscriptionPaymentCard() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+type SubscriptionPaymentCardProps = {
+  subscriptionId?: string; // Optional prop for flexibility
+};
+
+export default function SubscriptionPaymentCard({ subscriptionId }: SubscriptionPaymentCardProps) {
+  const params = useParams();
+  // Use subscriptionId from prop or from URL params
+  const effectiveSubscriptionId = subscriptionId || (params.id as string);
+  
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   // Calculate payment dates based on subscription start date
   const calculatePaymentDates = (startDate: string, cycleInMonths: number = 12): Date[] => {
@@ -50,68 +57,80 @@ export default function SubscriptionPaymentCard() {
     }));
   };
 
-  // Memoized payment details that only updates when subscriptions change
+  // Memoized payment details that only updates when subscription changes
   const paymentDetails = useMemo(() => {
-    if (subscriptions.length === 0) return [];
-    const subscription = subscriptions[0];
+    if (!subscription) return [];
     const dates = calculatePaymentDates(subscription.startDate, subscription.plan.lockinPeriod);
     return getPaymentDetails(dates, subscription.monthlyInvestment);
-  }, [subscriptions]);
+  }, [subscription]);
 
   useEffect(() => {
-    const fetchSubscriptions = async () => {
+    const fetchSubscriptionDetails = async () => {
+      // Ensure we have a subscription ID to fetch
+      if (!effectiveSubscriptionId) {
+        setError("No subscription ID provided");
+        setLoading(false);
+        return;
+      }
+
       try {
         const jwt = await account.createJWT();
-        const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription', {
-          method: 'GET',
+        const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription/details', {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-appwrite-jwt': jwt.jwt
           },
+          body: JSON.stringify({ subscriptionId: effectiveSubscriptionId }),
           credentials: 'include'
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
+          throw new Error(`Failed to fetch subscription details: ${response.statusText}`);
         }
 
         const data = await response.json();
         
-        const subscriptionsWithDetails = data.map((subscription: any) => ({
-          $id: subscription.$id,
-          monthlyInvestment: subscription.monthlyInvestment,
-          isActive: subscription.isActive,
-          startDate: subscription.$createdAt,
+        // Ensure we have a valid subscription in the response
+        if (!data) {
+          throw new Error("No subscription found");
+        }
+
+        const subscriptionDetails = {
+          $id: data.$id,
+          monthlyInvestment: data.monthlyInvestment,
+          isActive: data.isActive,
+          startDate: data.$createdAt,
           plan: {
-            planName: subscription.plan.planName,
-            planType: subscription.plan.planType,
-            investmentCycle: subscription.plan.investmentCycle,
-            lockinPeriod: subscription.plan.lockinPeriod,
+            planName: data.plan.planName,
+            planType: data.plan.planType,
+            investmentCycle: data.plan.investmentCycle,
+            lockinPeriod: data.plan.lockinPeriod,
           },
-        }));
+        };
         
-        setSubscriptions(subscriptionsWithDetails);
+        setSubscription(subscriptionDetails);
       } catch (err: any) {
-        console.error("Error fetching subscriptions:", err);
-        setError(err.message || "Failed to load subscriptions.");
+        console.error("Error fetching subscription details:", err);
+        setError(err.message || "Failed to load subscription details.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSubscriptions();
-  }, []);
+    fetchSubscriptionDetails();
+  }, [effectiveSubscriptionId]);
 
   if (loading) {
-    return <p className="text-center py-4">Loading subscriptions...</p>;
+    return <p className="text-center py-4">Loading subscription details...</p>;
   }
 
   if (error) {
     return <p className="text-red-500 text-center py-4">{error}</p>;
   }
 
-  if (subscriptions.length === 0) {
-    return <p className="text-center py-4">No subscriptions found.</p>;
+  if (!subscription) {
+    return <p className="text-center py-4">No subscription found.</p>;
   }
 
   return (
@@ -128,14 +147,14 @@ export default function SubscriptionPaymentCard() {
                 {payment.status}
               </span>
             </div>
-            <h2 className="text-lg font-semibold mt-2">AED {payment.monthlyInvestment}</h2>
+            <h2 className="text-lg font-semibold mt-2">₹ {payment.monthlyInvestment}</h2>
             <div className="pt-4">
               <h3 className="text-sm font-semibold text-gray-500">Payment Date</h3>
               <p className="text-gray-800">{payment.date}</p>
             </div>
             <div className="pt-2">
               <h3 className="text-sm font-semibold text-gray-500">Plan</h3>
-              <p className="text-gray-800">{subscriptions[0].plan.planName}</p>
+              <p className="text-gray-800">{subscription.plan.planName}</p>
             </div>
           </div>
         </div>
