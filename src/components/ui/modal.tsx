@@ -168,7 +168,7 @@ export default function SubscriptionModal({ isOpen, onClose, plan }: ModalProps)
             onClick={handleSubmit}
             disabled={loading || !confirm || monthlyInvestment < (plan.minimumInvestment || 0)}
             className={`rounded-md px-4 py-2 text-sm font-medium text-white ${
-              loading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'
+              loading ? 'bg-indigo-400' : 'bg-primary hover:bg-indigo-700'
             }`}
           >
             {loading ? (

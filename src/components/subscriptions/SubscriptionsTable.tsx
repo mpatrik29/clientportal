@@ -134,7 +134,7 @@ export default function SubscriptionsCards() {
             <div className="px-6 pb-6">
               <button
                 onClick={() => router.push(`subscriptionDetails/${subscription.$id}`)}
-                className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
               >
                 View Details
               </button>
