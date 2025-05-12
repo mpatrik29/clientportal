@@ -113,11 +113,8 @@ export default function SubscriptionsCards() {
 
             {/* Plan Details */}
             <div className="px-6 pb-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs font-medium text-gray-500">Investment</p>
-                  <p className="text-sm font-semibold">₹{subscription.monthlyInvestment}</p>
-                </div>
+              <div className="grid grid-cols-3 gap-4">
+                
                 <div>
                   <p className="text-xs font-medium text-gray-500">Cycle</p>
                   <p className="text-sm font-semibold capitalize">{subscription.plan.investmentCycle}</p>
