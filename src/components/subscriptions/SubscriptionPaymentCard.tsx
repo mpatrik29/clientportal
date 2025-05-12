@@ -4,17 +4,24 @@ import React, { useEffect, useMemo, useState } from "react";
 import { account } from "@/app/appwrite";
 import { useParams } from "next/navigation";
 
+type Plan = {
+  planName: string;
+  planType: string;
+  investmentMode: "by_amount" | "by_weight" | string;
+  minimumInvestment: number;
+  lockinPeriod: number;
+  investmentCycle: string;
+  investmentPeriod: string;
+  bonusPercentage: number;
+  planDescription: string | null;
+};
+
 type Subscription = {
   $id: string;
   monthlyInvestment: number;
-  isActive: boolean | null;
+  isActive: boolean;
   startDate: string;
-  plan: {
-    planName: string;
-    planType: string;
-    investmentCycle: string;
-    lockinPeriod: number;
-  };
+  plan: Plan;
 };
 
 type PaymentDetail = {
@@ -24,12 +31,11 @@ type PaymentDetail = {
 };
 
 type SubscriptionPaymentCardProps = {
-  subscriptionId?: string; // Optional prop for flexibility
+  subscriptionId?: string;
 };
 
 export default function SubscriptionPaymentCard({ subscriptionId }: SubscriptionPaymentCardProps) {
   const params = useParams();
-  // Use subscriptionId from prop or from URL params
   const effectiveSubscriptionId = subscriptionId || (params.id as string);
   
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -60,13 +66,27 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   // Memoized payment details that only updates when subscription changes
   const paymentDetails = useMemo(() => {
     if (!subscription) return [];
-    const dates = calculatePaymentDates(subscription.startDate, subscription.plan.lockinPeriod);
+    const dates = calculatePaymentDates(
+      subscription.startDate, 
+      Number(subscription.plan.investmentPeriod) || 12
+    );
     return getPaymentDetails(dates, subscription.monthlyInvestment);
   }, [subscription]);
 
+  // Format monthly investment based on investment mode
+  const formatMonthlyInvestment = (investment: number, mode?: string) => {
+    switch(mode) {
+      case "by_amount":
+        return `AED ${investment.toLocaleString()}`;
+      case "by_weight":
+        return `${investment} g`;
+      default:
+        return investment.toString();
+    }
+  };
+
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
-      // Ensure we have a subscription ID to fetch
       if (!effectiveSubscriptionId) {
         setError("No subscription ID provided");
         setLoading(false);
@@ -91,12 +111,11 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
 
         const data = await response.json();
         
-        // Ensure we have a valid subscription in the response
         if (!data) {
           throw new Error("No subscription found");
         }
 
-        const subscriptionDetails = {
+        const subscriptionDetails: Subscription = {
           $id: data.$id,
           monthlyInvestment: data.monthlyInvestment,
           isActive: data.isActive,
@@ -104,12 +123,18 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
           plan: {
             planName: data.plan.planName,
             planType: data.plan.planType,
-            investmentCycle: data.plan.investmentCycle,
+            investmentMode: data.plan.investmentMode,
+            minimumInvestment: data.plan.minimumInvestment,
             lockinPeriod: data.plan.lockinPeriod,
-          },
+            investmentCycle: data.plan.investmentCycle,
+            investmentPeriod: data.plan.investmentPeriod,
+            bonusPercentage: data.plan.bonusPercentage,
+            planDescription: data.plan.planDescription
+          }
         };
         
         setSubscription(subscriptionDetails);
+        
       } catch (err: any) {
         console.error("Error fetching subscription details:", err);
         setError(err.message || "Failed to load subscription details.");
@@ -134,31 +159,83 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-      {paymentDetails.map((payment, index) => (
-        <div key={index} className="card shadow-md rounded-lg p-4 bg-white">
+    <>
+      <div className="card shadow-sm bg-white rounded-lg p-3">
+        <div className="card-body p-4">
+          <div className="grid grid-cols-3 gap-6">
+            <p>
+              <strong>Plan Name:</strong> {subscription.plan.planName}
+            </p>
+            <p>
+              <strong>Plan Type:</strong> {subscription.plan.planType}
+            </p>
+            <p>
+              <strong>Investment Cycle:</strong> {subscription.plan.investmentCycle}
+            </p>
+            <p>
+              <strong>Investment Period:</strong> {subscription.plan.investmentPeriod} months
+            </p>
+            <p>
+              <strong>Monthly Investment:</strong> {formatMonthlyInvestment(
+                subscription.monthlyInvestment, 
+                subscription.plan.investmentMode
+              )}
+            </p>
+            <p>
+              <strong>Lock-in Period:</strong> {subscription.plan.lockinPeriod} months
+            </p>
+            <p>
+              <strong>Minimum Investment:</strong> {formatMonthlyInvestment(
+                subscription.plan.minimumInvestment, 
+                subscription.plan.investmentMode
+              )}
+            </p>
+            <p>
+              <strong>Bonus Percentage:</strong> {subscription.plan.bonusPercentage}%
+            </p>
+            <p>
+              <strong>Status:</strong> {subscription.isActive ? "Active" : "Inactive"}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="pt-6">
+        <div className="card bg-white rounded-lg shadow-sm p-3">
+          <div className="card-header">
+            <h2 className="text-lg font-semibold">Payment History</h2>
+          </div>
           <div className="card-body">
-            <div className="text-right">
-              <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                payment.status === "Completed" 
-                  ? "bg-green-50 text-green-700 ring-green-600/20" 
-                  : "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
-              }`}>
-                {payment.status}
-              </span>
-            </div>
-            <h2 className="text-lg font-semibold mt-2">₹ {payment.monthlyInvestment}</h2>
-            <div className="pt-4">
-              <h3 className="text-sm font-semibold text-gray-500">Payment Date</h3>
-              <p className="text-gray-800">{payment.date}</p>
-            </div>
-            <div className="pt-2">
-              <h3 className="text-sm font-semibold text-gray-500">Plan</h3>
-              <p className="text-gray-800">{subscription.plan.planName}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+              {paymentDetails.map((payment, index) => (
+                <div key={index} className="card shadow-md rounded-lg p-4 bg-white">
+                  <div className="card-body">
+                    <div className="text-right">
+                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                        payment.status === "Completed" 
+                        ? "bg-green-50 text-green-700 ring-green-600/20" 
+                        : "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
+                      }`}>
+                        {payment.status}
+                      </span>
+                    </div>
+                    <h2 className="text-lg font-semibold mt-2">
+                      {formatMonthlyInvestment(payment.monthlyInvestment, subscription.plan.investmentMode)}
+                    </h2>
+                    <div className="pt-4">
+                      <h3 className="text-sm font-semibold text-gray-500">Payment Date</h3>
+                      <p className="text-gray-800">{payment.date}</p>
+                    </div>
+                    <div className="pt-2">
+                      <h3 className="text-sm font-semibold text-gray-500">Plan</h3>
+                      <p className="text-gray-800">{subscription.plan.planName}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      ))}
-    </div>
+      </div>
+    </>
   );
 }
