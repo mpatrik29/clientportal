@@ -55,7 +55,7 @@ export default function PlanCard({ plan, onSubscribe }: PlanCardProps) {
         {/* Subscribe button */}
         <button
           onClick={() => onSubscribe(plan.$id)}
-          className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 py-3 font-medium text-white transition-all hover:from-blue-700 hover:to-blue-600 hover:shadow-md"
+          className="w-full rounded-lg bg-primary py-3 font-medium text-white transition-all hover:from-blue-700 hover:to-blue-600 hover:shadow-md"
         >
           Subscribe Now
         </button>
