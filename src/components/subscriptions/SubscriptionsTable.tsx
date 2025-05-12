@@ -17,7 +17,7 @@ type Subscription = {
   };
 };
 
-export default function SubscriptionsTable() {
+export default function SubscriptionsCards() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,10 +26,7 @@ export default function SubscriptionsTable() {
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
-        // Get JWT token for authentication
         const jwt = await account.createJWT();
-        
-        // Call your Appwrite function endpoint
         const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription', {
           method: 'GET',
           headers: {
@@ -44,12 +41,11 @@ export default function SubscriptionsTable() {
 
         const data = await response.json();
         
-        // Map through subscriptions and extract key details
         const subscriptionsWithDetails = data.map((subscription: any) => ({
           $id: subscription.$id,
           monthlyInvestment: subscription.monthlyInvestment,
           isActive: subscription.isActive,
-          startDate: subscription.$createdAt, // Use the creation date as the start date
+          startDate: subscription.$createdAt,
           plan: {
             planName: subscription.plan.planName,
             planType: subscription.plan.planType,
@@ -71,59 +67,84 @@ export default function SubscriptionsTable() {
   }, []);
 
   if (loading) {
-    return <p>Loading subscriptions...</p>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-red-500">{error}</p>;
+    return <p className="text-red-500 text-center py-8">{error}</p>;
   }
 
   if (subscriptions.length === 0) {
-    return <p>No subscriptions found.</p>;
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-gray-900">No subscriptions found</h3>
+        <p className="mt-2 text-gray-500">You don't have any active subscriptions yet.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="mb-6 text-2xl font-bold">My Subscriptions</h1>
-      <table className="w-full border-collapse border border-gray-200">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-200 px-4 py-2 text-left">Plan Name</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">Plan Type</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">Investment Cycle</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">Lock-in Period</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">Monthly Investment</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">Start Date</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">Status</th>
-            <th className="border border-gray-200 px-4 py-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {subscriptions.map((subscription) => (
-            <tr key={subscription.$id} className="hover:bg-gray-50">
-              <td className="border border-gray-200 px-4 py-2">{subscription.plan.planName}</td>
-              <td className="border border-gray-200 px-4 py-2">{subscription.plan.planType}</td>
-              <td className="border border-gray-200 px-4 py-2">{subscription.plan.investmentCycle}</td>
-              <td className="border border-gray-200 px-4 py-2">{subscription.plan.lockinPeriod} months</td>
-              <td className="border border-gray-200 px-4 py-2">₹{subscription.monthlyInvestment}</td>
-              <td className="border border-gray-200 px-4 py-2">
-                {new Date(subscription.startDate).toLocaleDateString()}
-              </td>
-              <td className="border border-gray-200 px-4 py-2">
-                {subscription.isActive ? "Active" : "Inactive"}
-              </td>
-              <td className="border border-gray-200 px-4 py-2">
-                <button
-                  onClick={() => router.push(`subscriptionDetails/${subscription.$id}`)}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                >
-                  View Details
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="container mx-auto p-4 sm:p-6">
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">My Subscriptions</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {subscriptions.map((subscription) => (
+          <div key={subscription.$id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            {/* Card Header */}
+            <div className="p-6 pb-4">
+              <div className="flex justify-between items-start">
+                <h3 className="text-lg font-bold text-gray-900">{subscription.plan.planName}</h3>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  subscription.isActive 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {subscription.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Started on {new Date(subscription.startDate).toLocaleDateString()}
+              </p>
+            </div>
+
+            {/* Plan Details */}
+            <div className="px-6 pb-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Investment</p>
+                  <p className="text-sm font-semibold">₹{subscription.monthlyInvestment}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Cycle</p>
+                  <p className="text-sm font-semibold capitalize">{subscription.plan.investmentCycle}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Plan Type</p>
+                  <p className="text-sm font-semibold capitalize">{subscription.plan.planType}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Lock-in Period</p>
+                  <p className="text-sm font-semibold">{subscription.plan.lockinPeriod} months</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Footer */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => router.push(`subscriptionDetails/${subscription.$id}`)}
+                className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
