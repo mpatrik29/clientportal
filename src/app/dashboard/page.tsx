@@ -11,6 +11,7 @@ import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
 import { RegionLabels } from "./_components/region-labels";
 import TradingViewWidget from "@/components/Charts/tradingview/TradingViewWidget";
 import StatusCards from "@/components/Dashboard/StatusCards";
+import SubscriptionsTable from "@/components/subscriptions/SubscriptionsTable";
 
 type PropsType = {
   searchParams: Promise<{
@@ -28,8 +29,11 @@ export default async function Home({ searchParams }: PropsType) {
       <Suspense fallback={<OverviewCardsSkeleton />}>
         <OverviewCardsGroup />
       </Suspense>
-      <div>
-        
+      <div className="">
+        <h2 className="py-4">My Subscriptions</h2>
+        <Suspense fallback={<TopChannelsSkeleton />}>
+          <SubscriptionsTable />
+        </Suspense>
       </div>
     </>
   );
