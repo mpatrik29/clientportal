@@ -114,7 +114,7 @@ export default function SubscriptionsTable() {
               </td>
               <td className="border border-gray-200 px-4 py-2">
                 <button
-                  onClick={() => router.push(`/subscriptionDetails/${subscription.$id}`)}
+                  onClick={() => router.push(`subscriptionDetails/${subscription.$id}`)}
                   className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                 >
                   View Details

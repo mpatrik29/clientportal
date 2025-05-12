@@ -3,7 +3,7 @@ import { getOverviewData } from "../../fetch";
 import { OverviewCard } from "./card";
 import * as icons from "./icons";
 import { ActiveSubscriptionsCard } from "./activeSubscriptionCard";
-import { AvailableAssetscard } from "./availableAssetsCard";
+import { AvailableAssetsCard } from "./availableAssetsCard";
 import { GoldRateCard } from "./goldRatecard";
 
 export async function OverviewCardsGroup() {
@@ -19,20 +19,26 @@ export async function OverviewCardsGroup() {
         flexi:0
       }}/>
      
-     <AvailableAssetscard label={"My Subscriptions"} data={{
-        total: 6,
-        matured: 2,
-        unMatured: 4,
-      }}/>
+     <AvailableAssetsCard 
+        label="My Subscriptions"
+        data={{
+          total: 6,
+          matured: 2,
+          unMatured: 4
+        }}
+      />
+      <GoldRateCard 
+        label="Gold Rate"
+        date="Monday, 12 May 2025"
+        data={{
+          liveRate: 250,
+          openingRate: 200,
+          closingRate: 300,
+          yearlyHigh: 400,
+          yearlyLow: 100
+        }}
+      />
 
-      <GoldRateCard label={"Gold Rate"} data={{
-        liverate: 250,
-        openingrate: 200,
-        closingrate: 300,
-        yearlyHigh: 400,
-        yearlyLow: 100,
-      }}/>s
-  
 
       
     </div>

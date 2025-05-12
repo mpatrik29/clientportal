@@ -1,3 +1,5 @@
+'use client';
+
 import { PaymentsOverview } from "@/components/Charts/payments-overview";
 import { UsedDevices } from "@/components/Charts/used-devices";
 import { WeeksProfit } from "@/components/Charts/weeks-profit";
@@ -15,7 +17,7 @@ import { Suspense } from "react";
 export default async function Home() {
   const params = useParams();
   const subscriptionId = params.id as string;
-  
+
   return (
     <>
     <div className="card shadow-sm bg-white rounded-lg p-3">

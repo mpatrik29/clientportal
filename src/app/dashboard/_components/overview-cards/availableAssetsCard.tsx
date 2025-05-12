@@ -1,34 +1,35 @@
 type PropsType = {
     label: string;
     data: {
-        total:number;
-        matured:number;
-        unMatured:number;
-    }
-};
-
-export function AvailableAssetscard({label,data} : PropsType) {
+      total: number;
+      matured: number;
+      unMatured: number;
+    };
+  };
+  
+  export function AvailableAssetsCard({ label, data }: PropsType) {
     return (
-        <div className="bg-white shadow-md rounded-2xl  max-w-4xl mx-auto">
-            <div className="px-6 pt-6 pb-3">
-                <h2 className="text-xl font-semibold text-gray-800">{data.total}g</h2>
-                <h4 className="text-md font-semibold text-gray-800">{label}</h4>
-                <div className="mt-2 space-y-1">    
-                </div>
-            </div>
-            <hr></hr>
-            <div className="grid md:grid-cols-4 gap-6 px-6 pb-6 pt-3">
-                <div className="text-left">
-                    <div className="text-purple-600 font-bold text-lg">{data.matured}g</div>
-                    <div className="text-purple-600 font-bold text-sm">Matured Investment</div>
-                    
-                </div>
-                <div className="text-left">
-                    <div className="text-purple-600 font-bold text-lg">{data.unMatured}g</div>
-                    <div className="text-purple-600 font-bold text-sm">Unmaturd Investment</div>
-                </div>
-            </div>
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 max-w-md mx-auto">
+        {/* Header section */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">{data.total}g</h2>
+          <h4 className="text-lg font-medium text-gray-600">{label}</h4>
         </div>
-
-      );
-}
+        
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Matured */}
+          <div className="text-center p-3 rounded-lg bg-green-50">
+            <div className="text-3xl font-bold text-green-600">{data.matured}g</div>
+            <div className="text-sm font-medium text-green-500 mt-1">Matured Investment</div>
+          </div>
+          
+          {/* Unmatured */}
+          <div className="text-center p-3 rounded-lg bg-blue-50">
+            <div className="text-3xl font-bold text-blue-600">{data.unMatured}g</div>
+            <div className="text-sm font-medium text-blue-500 mt-1">Unmatured Investment</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
