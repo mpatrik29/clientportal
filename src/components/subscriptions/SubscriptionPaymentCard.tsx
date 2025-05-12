@@ -42,18 +42,19 @@ export default function SubscriptionPaymentCard() {
 
   // Generate payment details from dates and monthly investment
   const getPaymentDetails = (dates: Date[], monthlyInvestment: number): PaymentDetail[] => {
+    const now = new Date();
     return dates.map(date => ({
       date: date.toLocaleDateString(),
       monthlyInvestment,
-      status: date < new Date() ? "Completed" : "Pending",
+      status: date < now ? "Completed" : "Pending",
     }));
   };
 
-  // Memoized payment details to avoid recalculating on every render
+  // Memoized payment details that only updates when subscriptions change
   const paymentDetails = useMemo(() => {
     if (subscriptions.length === 0) return [];
     const subscription = subscriptions[0];
-    const dates = calculatePaymentDates(subscription.startDate);
+    const dates = calculatePaymentDates(subscription.startDate, subscription.plan.lockinPeriod);
     return getPaymentDetails(dates, subscription.monthlyInvestment);
   }, [subscriptions]);
 
@@ -67,7 +68,7 @@ export default function SubscriptionPaymentCard() {
             'Content-Type': 'application/json',
             'x-appwrite-jwt': jwt.jwt
           },
-          credentials: 'include' // Include credentials for CORS
+          credentials: 'include'
         });
 
         if (!response.ok) {
@@ -131,6 +132,10 @@ export default function SubscriptionPaymentCard() {
             <div className="pt-4">
               <h3 className="text-sm font-semibold text-gray-500">Payment Date</h3>
               <p className="text-gray-800">{payment.date}</p>
+            </div>
+            <div className="pt-2">
+              <h3 className="text-sm font-semibold text-gray-500">Plan</h3>
+              <p className="text-gray-800">{subscriptions[0].plan.planName}</p>
             </div>
           </div>
         </div>
