@@ -46,11 +46,11 @@ export default async function Home() {
                 <h2 className="text-lg font-semibold">Payment History</h2>
             </div>
             <div className="card-body">
-                <div className="grid grid-cols-4 gap-6 p-4">
+                
                     <SubscriptionPaymentCard/>
                     
                     
-                </div>
+                
             </div>
         </div>
     </div>
