@@ -30,7 +30,7 @@ export default async function Home({ searchParams }: PropsType) {
         <OverviewCardsGroup />
       </Suspense>
       <div className="">
-        <h2 className="py-4">My Subscriptions</h2>
+        
         <Suspense fallback={<TopChannelsSkeleton />}>
           <SubscriptionsTable />
         </Suspense>
