@@ -34,6 +34,16 @@ export default async function Home({ searchParams }: PropsType) {
         <Suspense fallback={<TopChannelsSkeleton />}>
           <SubscriptionsTable />
         </Suspense>
+
+        <div className="relative w-full ">
+          <img
+            src="/images/AdvertBanner.png" // Replace with your banner image path
+            alt="Dashboard Banner"
+            className="w-full h-64 object-cover rounded-lg shadow-lg mb-4"
+          />
+          
+        </div>
+
       </div>
     </>
   );
