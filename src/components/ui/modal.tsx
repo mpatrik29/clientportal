@@ -22,6 +22,13 @@ export default function Modal({ isOpen, onClose, plan }: ModalProps) {
   const [confirm, setConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Fetch userId from localStorage when component mounts
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    setUserId(storedUserId);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,14 +36,7 @@ export default function Modal({ isOpen, onClose, plan }: ModalProps) {
     setError(null);
 
     try {
-      // Get the userDocId from localStorage
-      const [userId, setUserId] = useState<string | null>(null);
-
-      useEffect(() => {
-        // Fetch the userId from localStorage when the component mounts
-        const storedUserId = localStorage.getItem("userId");
-        setUserId(storedUserId);
-      }, []);
+      // Check if userId exists
       if (!userId) {
         throw new Error("User document ID not found in localStorage.");
       }
@@ -49,7 +49,7 @@ export default function Modal({ isOpen, onClose, plan }: ModalProps) {
         {
           userId: userId, // Use the userDocId from localStorage
           plan: plan.$id,
-          monthlyInvestment: monthlyInvestment,
+          monthlyInvestment: Number(monthlyInvestment),
           isActive: true,
         }
       );
@@ -58,7 +58,11 @@ export default function Modal({ isOpen, onClose, plan }: ModalProps) {
       onClose(); // Close the modal after successful submission
     } catch (err) {
       console.error("Error creating subscription:", err);
-      setError("Failed to create subscription. Please try again.");
+      setError(
+        err instanceof Error 
+          ? err.message 
+          : "Failed to create subscription. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -91,6 +95,7 @@ export default function Modal({ isOpen, onClose, plan }: ModalProps) {
               onChange={(e) => setMonthlyInvestment(Number(e.target.value))}
               className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               required
+              min="0"
             />
           </div>
 
@@ -119,7 +124,7 @@ export default function Modal({ isOpen, onClose, plan }: ModalProps) {
             </button>
             <button
               type="submit"
-              disabled={loading || !confirm}
+              disabled={loading || !confirm || !userId || !monthlyInvestment}
               className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
             >
               {loading ? "Submitting..." : "Subscribe"}
