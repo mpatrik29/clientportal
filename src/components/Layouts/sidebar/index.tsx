@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeftIcon, ChevronUp } from "./icons";
+import { ArrowLeftIcon, ChevronUp, DashIcon, ExploreIcon, HomeIcon, SettingsIcon, SubscriptionIcon, TransactionIcon, WalletIcon } from "./icons";
 import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
+import Home from "@/app/dashboard/page";
 
 // Define the type for NAV_DATA
 type NavItem = {
@@ -26,27 +27,27 @@ const NAV_DATA: NavSection[] = [
 	{
 		label: "Main",
 		items: [
-			{ title: "Dashboard", url: "/dashboard", icon: ArrowLeftIcon, items: [] },
+			{ title: "Dashboard", url: "/dashboard", icon: DashIcon, items: [] },
 			{
 				title: "Explore Investment",
 				url: "/explore",
-				icon: ArrowLeftIcon,
+				icon: ExploreIcon,
 				items: [],
 			},
 			{
 				title: "My Subscriptions",
 				url: "/subscriptions",
-				icon: ArrowLeftIcon,
+				icon: SubscriptionIcon,
 				items: [],
 			},
 			{
 				title: "Transactions",
 				url: "/transactions",
-				icon: ArrowLeftIcon,
+				icon: TransactionIcon,
 				items: [],
 			},
-			{ title: "Wallet", url: "/wallet", icon: ArrowLeftIcon, items: [] },
-			{ title: "Settings", url: "/settings", icon: ArrowLeftIcon, items: [] },
+			{ title: "Wallet", url: "/wallet", icon: WalletIcon, items: [] },
+			{ title: "Settings", url: "/settings", icon: SettingsIcon, items: [] },
 		],
 	},
 ];
