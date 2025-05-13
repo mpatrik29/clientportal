@@ -34,17 +34,17 @@ export default function PlanCard({ plan, onSubscribe }: PlanCardProps) {
             <p className="text-xs font-medium text-gray-500">Min. Investment</p>
             <p className="text-sm font-semibold">AED {plan.minimumInvestment}</p>
           </div>
-          <div>
+          {/* <div>
             <p className="text-xs font-medium text-gray-500">Lock-in Period</p>
             <p className="text-sm font-semibold">{plan.lockinPeriod} months</p>
-          </div>
+          </div> */}
           <div>
             <p className="text-xs font-medium text-gray-500">Cycle</p>
             <p className="text-sm font-semibold capitalize">{plan.investmentCycle}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-gray-500">Duration</p>
-            <p className="text-sm font-semibold">{plan.investmentPeriod} months</p>
+            <p className="text-sm font-semibold">{plan.investmentPeriod === 0 ? 'Flexible' : `${plan.investmentPeriod} months`}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-gray-500">Bonus</p>

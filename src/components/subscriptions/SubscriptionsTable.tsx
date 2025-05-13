@@ -126,7 +126,7 @@ export default function SubscriptionsCards() {
                   <p className="text-sm font-semibold capitalize">{subscription.plan.planType}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Investment Period</p>
+                  <p className="text-xs font-medium text-gray-500">Duration</p>
                   <p className="text-sm font-semibold">
                     {subscription.plan.investmentPeriod === 0 ? 'Flexible' : `${subscription.plan.investmentPeriod} months`}
                   </p>
