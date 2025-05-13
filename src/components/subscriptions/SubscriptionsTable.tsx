@@ -14,6 +14,7 @@ type Subscription = {
     planType: string;
     investmentCycle: string;
     lockinPeriod: number;
+    investmentPeriod:number;
   };
 };
 
@@ -51,6 +52,7 @@ export default function SubscriptionsCards() {
             planType: subscription.plan.planType,
             investmentCycle: subscription.plan.investmentCycle,
             lockinPeriod: subscription.plan.lockinPeriod,
+            investmentPeriod: subscription.plan.investmentPeriod,
           },
         }));
 
@@ -124,8 +126,10 @@ export default function SubscriptionsCards() {
                   <p className="text-sm font-semibold capitalize">{subscription.plan.planType}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Lock-in Period</p>
-                  <p className="text-sm font-semibold">{subscription.plan.lockinPeriod} months</p>
+                  <p className="text-xs font-medium text-gray-500">Investment Period</p>
+                  <p className="text-sm font-semibold">
+                    {subscription.plan.investmentPeriod === 0 ? 'Flexible' : `${subscription.plan.investmentPeriod} months`}
+                  </p>
                 </div>
               </div>
             </div>
