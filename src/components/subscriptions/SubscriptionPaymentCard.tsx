@@ -144,6 +144,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
               status: payment.status
             }));
             setPaymentDetailsArray(prev => ({ ...prev, paymentDetails }));
+            console.log("Payment details:", paymentDetails);
           }
         }catch (error) {
           console.error("Error fetching payment details:", error);
