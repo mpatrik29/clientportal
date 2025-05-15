@@ -41,7 +41,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [paymentDetailsArray, setPaymentDetailsArray] = useState<PaymentDetail[]>([]);
   // Calculate payment dates based on subscription start date
   const calculatePaymentDates = (startDate: string, cycleInMonths: number = 12): Date[] => {
     if (!startDate) return [];
@@ -64,14 +64,14 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   };
 
   // Memoized payment details that only updates when subscription changes
-  const paymentDetails = useMemo(() => {
-    if (!subscription) return [];
-    const dates = calculatePaymentDates(
-      subscription.startDate, 
-      Number(subscription.plan.investmentPeriod) || 12
-    );
-    return getPaymentDetails(dates, subscription.monthlyInvestment);
-  }, [subscription]);
+  // const paymentDetails = useMemo(() => {
+  //   if (!subscription) return [];
+  //   const dates = calculatePaymentDates(
+  //     subscription.startDate, 
+  //     Number(subscription.plan.investmentPeriod) || 12
+  //   );
+  //   return getPaymentDetails(dates, subscription.monthlyInvestment);
+  // }, [subscription]);
 
   // Format monthly investment based on investment mode
   const formatMonthlyInvestment = (investment: number, mode?: string) => {
@@ -135,6 +135,17 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         
         setSubscription(subscriptionDetails);
         
+
+        if (data.subscription.documents && data.subscription.documents.length > 0) {
+          const paymentDetails = data.subscription.documents.map((payment: any) => ({
+            date: payment.date,
+            monthlyInvestment: payment.monthlyInvestment,
+            status: payment.status
+          }));
+          setPaymentDetailsArray(prev => ({ ...prev, paymentDetails }));
+        }
+
+
       } catch (err: any) {
         console.error("Error fetching subscription details:", err);
         setError(err.message || "Failed to load subscription details.");
@@ -206,7 +217,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
           </div>
           <div className="card-body">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {paymentDetails.map((payment, index) => (
+              {paymentDetailsArray.map((payment, index) => (
                 <div key={index} className="card shadow-md rounded-lg p-4 bg-white">
                   <div className="card-body">
                     <div className="text-right">
