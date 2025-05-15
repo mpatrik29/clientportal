@@ -137,7 +137,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         
 
         try {
-          if (data.documents && data.documents.length > 0) {
+          if (data.documents) {
             const paymentDetails = data.documents.map((payment: any) => ({
               date: paymentDetails.date,
               creditedGold: payment.creditedGold,
