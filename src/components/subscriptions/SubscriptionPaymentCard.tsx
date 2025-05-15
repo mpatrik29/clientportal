@@ -136,13 +136,17 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         setSubscription(subscriptionDetails);
         
 
-        if (data.subscription.documents && data.subscription.documents.length > 0) {
-          const paymentDetails = data.subscription.documents.map((payment: any) => ({
-            date: payment.date,
-            monthlyInvestment: payment.monthlyInvestment,
-            status: payment.status
-          }));
-          setPaymentDetailsArray(prev => ({ ...prev, paymentDetails }));
+        try {
+          if (data.documents && data.documents.length > 0) {
+            const paymentDetails = data.documents.map((payment: any) => ({
+              date: paymentDetails.date,
+              creditedGold: payment.creditedGold,
+              status: payment.status
+            }));
+            setPaymentDetailsArray(prev => ({ ...prev, paymentDetails }));
+          }
+        }catch (error) {
+          console.error("Error fetching payment details:", error);
         }
 
 
