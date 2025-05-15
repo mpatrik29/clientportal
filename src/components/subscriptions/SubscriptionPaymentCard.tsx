@@ -26,8 +26,8 @@ type Subscription = {
 
 type PaymentDetail = {
   date: string;
-  monthlyInvestment: number;
-  status: "Pending" | "Completed";
+  creditedGold: number;
+  status: boolean;
 };
 
 type SubscriptionPaymentCardProps = {
@@ -226,15 +226,15 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
                   <div className="card-body">
                     <div className="text-right">
                       <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                        payment.status === "Completed" 
+                        payment.status === true
                         ? "bg-green-50 text-green-700 ring-green-600/20" 
                         : "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
                       }`}>
-                        {payment.status}
+                        {payment.status === true ? "Completed" : "Pending"}
                       </span>
                     </div>
                     <h2 className="text-lg font-semibold mt-2">
-                      {formatMonthlyInvestment(payment.monthlyInvestment, subscription.plan.investmentMode)}
+                      {payment.creditedGold}g
                     </h2>
                     <div className="pt-4">
                       <h3 className="text-sm font-semibold text-gray-500">Payment Date</h3>
