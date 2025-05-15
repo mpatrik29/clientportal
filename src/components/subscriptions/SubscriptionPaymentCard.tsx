@@ -54,7 +54,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   };
 
 
-  const makePayment = async (monthlyInvestment: number,planId: string) => {
+  const makePayment = async (monthlyInvestment: number) => {
     try {
       alert("Payment processing for monthly investment of " + monthlyInvestment);
     }catch (error) {
@@ -258,7 +258,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
                       <p className="text-gray-800">{subscription.plan.planName}</p>
                     </div>
                     <button
-                        onClick={() => makePayment(subscription.monthlyInvestment, subscription.plan.$id)}
+                        onClick={() => makePayment(subscription.monthlyInvestment)}
                         className="w-full rounded-lg bg-primary py-3 font-medium text-white transition-all hover:from-blue-700 hover:to-blue-600 hover:shadow-md"
                       >
                         Make Payment
