@@ -134,7 +134,9 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         };
         
         setSubscription(subscriptionDetails);
-        
+      
+        console.log("Payment docs:", data.documents);
+        console.log("total:", data.total);
 
         try {
           if (data.documents) {
