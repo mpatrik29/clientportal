@@ -53,15 +53,15 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
     });
   };
 
-  // Generate payment details from dates and monthly investment
-  const getPaymentDetails = (dates: Date[], monthlyInvestment: number): PaymentDetail[] => {
-    const now = new Date();
-    return dates.map(date => ({
-      date: date.toLocaleDateString(),
-      monthlyInvestment,
-      status: date < now ? "Completed" : "Pending",
-    }));
-  };
+  // // Generate payment details from dates and monthly investment
+  // const getPaymentDetails = (dates: Date[], monthlyInvestment: number): PaymentDetail[] => {
+  //   const now = new Date();
+  //   return dates.map(date => ({
+  //     date: date.toLocaleDateString(),
+  //     monthlyInvestment,
+  //     status: date < now ? "Completed" : "Pending",
+  //   }));
+  // };
 
   // Memoized payment details that only updates when subscription changes
   // const paymentDetails = useMemo(() => {
