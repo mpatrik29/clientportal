@@ -36,6 +36,7 @@ export default function SubscriptionsCards() {
   const functions = new Functions(client);
 
   client
+      .setEndpoint('https://fra.cloud.appwrite.io/v1')
       .setProject('681bddc10025a048377e') // Your project ID
   ;
 
@@ -48,8 +49,8 @@ export default function SubscriptionsCards() {
           {
             'Content-Type': 'application/json',
             'accept': '*/*',
-            'x-appwrite-jwt': account.createJWT().then((jwt) => jwt.jwt)
-
+            'x-appwrite-user-jwt': account.createJWT().then((jwt) => jwt.jwt),
+            'x-appwrite-user-id': account.get().then((user) => user.$id)
           } // headers (optional)
       );
 
