@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { account } from '@/app/appwrite';
 import { useParams } from 'next/navigation';
 import { Calendar, Loader2, CheckCircle, XCircle, ArrowDown, CreditCard } from 'lucide-react';
+import { cp } from 'fs';
 
 type Plan = {
   planName: string;
@@ -248,12 +249,16 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         
         // Calculate and set summary statistics
         setSummary(calculateSummary(subscriptionDetails));
-        console.log('Summery:', summary);
+        
       } catch (err: any) {
         console.error('Error fetching subscription details:', err);
         setError(err.message || 'Failed to load subscription details.');
       } finally {
         setLoading(false);
+        console.log('Subscription details loaded successfully');
+        console.log('Subscription:', subscription);
+        console.log('Summary:', summary);
+        console.log('Ledger Entries:', subscription?.ledgerEntries);
       }
     };
 
@@ -388,7 +393,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Payment History</h2>
         </div>
-        
+       
         {subscription.ledgerEntries && subscription.ledgerEntries.length > 0 ? (
           <div className="space-y-4">
             {subscription.ledgerEntries.map((entry) => {
