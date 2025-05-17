@@ -1,19 +1,23 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
-import { account } from "@/app/appwrite";
-import { useParams } from "next/navigation";
+import React, { useEffect, useState } from 'react';
+import { account } from '@/app/appwrite';
+import { useParams } from 'next/navigation';
+import { Calendar, Loader2, CheckCircle, XCircle, ArrowDown, CreditCard } from 'lucide-react';
 
 type Plan = {
   planName: string;
   planType: string;
-  investmentMode: "by_amount" | "by_weight" | string;
+  investmentMode: 'by_amount' | 'by_weight' | string;
   minimumInvestment: number;
   lockinPeriod: number;
   investmentCycle: string;
   investmentPeriod: string;
   bonusPercentage: number;
   planDescription: string | null;
+  $id?: string;
+  $createdAt?: string;
+  $updatedAt?: string;
 };
 
 type Subscription = {
@@ -22,12 +26,33 @@ type Subscription = {
   isActive: boolean;
   startDate: string;
   plan: Plan;
+  ledgerEntries?: LedgerEntry[];
+  userId?: string;
+  $createdAt?: string;
+  $updatedAt?: string;
 };
 
-type PaymentDetail = {
+type LedgerEntry = {
+  $id: string;
   date: string;
   creditedGold: number;
   status: boolean;
+  transaction?: {
+    id?: string;
+    date?: string;
+    amount?: number;
+  };
+  $createdAt?: string;
+  $updatedAt?: string;
+};
+
+type SubscriptionSummary = {
+  totalInvestmentValue: number;
+  totalPaid: number;
+  remainingAmount: number;
+  completionPercentage: number;
+  totalCreditedGold: number;
+  upcomingPayment?: LedgerEntry;
 };
 
 type SubscriptionPaymentCardProps = {
@@ -37,74 +62,130 @@ type SubscriptionPaymentCardProps = {
 export default function SubscriptionPaymentCard({ subscriptionId }: SubscriptionPaymentCardProps) {
   const params = useParams();
   const effectiveSubscriptionId = subscriptionId || (params.id as string);
-  
+
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [paymentDetailsArray, setPaymentDetailsArray] = useState<PaymentDetail[]>([]);
-  // Calculate payment dates based on subscription start date
-  const calculatePaymentDates = (startDate: string, cycleInMonths: number = 12): Date[] => {
-    if (!startDate) return [];
-    const start = new Date(startDate);
-    return Array.from({ length: cycleInMonths }, (_, i) => {
-      const date = new Date(start);
-      date.setMonth(date.getMonth() + i);
-      return date;
-    });
-  };
-
-
-  const makePayment = async (monthlyInvestment: number) => {
-    try {
-      alert("Payment processing for monthly investment of " + monthlyInvestment);
-    }catch (error) {
-      console.error("Error making payment:", error);  
-    }
-  };
-
-  // // Generate payment details from dates and monthly investment
-  // const getPaymentDetails = (dates: Date[], monthlyInvestment: number): PaymentDetail[] => {
-  //   const now = new Date();
-  //   return dates.map(date => ({
-  //     date: date.toLocaleDateString(),
-  //     monthlyInvestment,
-  //     status: date < now ? "Completed" : "Pending",
-  //   }));
-  // };
-
-  // Memoized payment details that only updates when subscription changes
-  // const paymentDetails = useMemo(() => {
-  //   if (!subscription) return [];
-  //   const dates = calculatePaymentDates(
-  //     subscription.startDate, 
-  //     Number(subscription.plan.investmentPeriod) || 12
-  //   );
-  //   return getPaymentDetails(dates, subscription.monthlyInvestment);
-  // }, [subscription]);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+  const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
 
   // Format monthly investment based on investment mode
   const formatMonthlyInvestment = (investment: number, mode?: string) => {
-    switch(mode) {
-      case "by_amount":
+    switch (mode) {
+      case 'by_amount':
         return `AED ${investment.toLocaleString()}`;
-      case "by_weight":
+      case 'by_weight':
         return `${investment} g`;
       default:
         return investment.toString();
     }
   };
 
+  // Format date to a readable format
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date);
+  };
+
+  // Calculate summary statistics
+  const calculateSummary = (subscription: Subscription): SubscriptionSummary => {
+    if (!subscription || !subscription.ledgerEntries) {
+      return {
+        totalInvestmentValue: 0,
+        totalPaid: 0,
+        remainingAmount: 0,
+        completionPercentage: 0,
+        totalCreditedGold: 0
+      };
+    }
+
+    const totalInvestmentValue = 
+      subscription.monthlyInvestment * parseInt(subscription.plan.investmentPeriod || '12');
+    
+    const paidEntries = subscription.ledgerEntries.filter(entry => entry.status);
+    const totalPaid = paidEntries.length * subscription.monthlyInvestment;
+    
+    const totalCreditedGold = paidEntries.reduce((sum, entry) => sum + (entry.creditedGold || 0), 0);
+    
+    // Find next unpaid entry
+    const now = new Date();
+    const upcomingPayment = subscription.ledgerEntries
+      .filter(entry => !entry.status && new Date(entry.date) > now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+    
+    return {
+      totalInvestmentValue,
+      totalPaid,
+      remainingAmount: totalInvestmentValue - totalPaid,
+      completionPercentage: (totalPaid / totalInvestmentValue) * 100,
+      totalCreditedGold,
+      upcomingPayment
+    };
+  };
+
+  // Process a payment
+  const makePayment = async (entryId: string) => {
+    setProcessingPayment(true);
+    setActiveEntryId(entryId);
+
+    try {
+      // In a real implementation, this would call your API endpoint
+      // For now, we'll simulate a successful payment after a delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      if (!subscription) return;
+      
+      // Update local state to reflect the payment
+      const updatedLedgerEntries = subscription.ledgerEntries?.map(entry => {
+        if (entry.$id === entryId) {
+          return {
+            ...entry,
+            status: true,
+            creditedGold: Math.round((subscription.monthlyInvestment / 8000) * 100) / 100, // Simulated gold credit
+            transaction: {
+              id: `txn_${Date.now()}`,
+              date: new Date().toISOString(),
+              amount: subscription.monthlyInvestment
+            }
+          };
+        }
+        return entry;
+      });
+      
+      const updatedSubscription = {
+        ...subscription,
+        ledgerEntries: updatedLedgerEntries
+      };
+      
+      setSubscription(updatedSubscription);
+      setSummary(calculateSummary(updatedSubscription));
+      
+      // In a real implementation, you'd show a success toast/notification
+      alert('Payment processed successfully!');
+    } catch (err: any) {
+      console.error('Error processing payment:', err);
+      alert('Payment failed. Please try again.');
+    } finally {
+      setProcessingPayment(false);
+      setActiveEntryId(null);
+    }
+  };
+
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
       if (!effectiveSubscriptionId) {
-        setError("No subscription ID provided");
+        setError('No subscription ID provided');
         setLoading(false);
         return;
       }
 
       try {
         const jwt = await account.createJWT();
-        console.log("JWT:", jwt.jwt);
         const response = await fetch('http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription/details', {
           method: 'POST',
           headers: {
@@ -120,17 +201,34 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         }
 
         const data = await response.json();
-        
+
         if (!data) {
-          throw new Error("No subscription found");
+          throw new Error('No subscription found');
         }
 
+        // Process payment documents into ledger entries
+        const ledgerEntries: LedgerEntry[] = data.documents ? 
+          data.documents.map((payment: any) => ({
+            $id: payment.$id || `entry_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            date: payment.date,
+            creditedGold: payment.creditedGold || 0,
+            status: payment.status || false,
+            transaction: payment.transaction || null,
+            $createdAt: payment.$createdAt || null,
+            $updatedAt: payment.$updatedAt || null
+          })) : [];
+
+        // Create subscription object
         const subscriptionDetails: Subscription = {
           $id: data.$id,
           monthlyInvestment: data.monthlyInvestment,
           isActive: data.isActive,
           startDate: data.$createdAt,
+          userId: data.userId,
+          $createdAt: data.$createdAt,
+          $updatedAt: data.$updatedAt,
           plan: {
+            $id: data.plan.$id,
             planName: data.plan.planName,
             planType: data.plan.planType,
             investmentMode: data.plan.investmentMode,
@@ -139,34 +237,21 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
             investmentCycle: data.plan.investmentCycle,
             investmentPeriod: data.plan.investmentPeriod,
             bonusPercentage: data.plan.bonusPercentage,
-            planDescription: data.plan.planDescription
-          }
+            planDescription: data.plan.planDescription,
+            $createdAt: data.plan.$createdAt,
+            $updatedAt: data.plan.$updatedAt
+          },
+          ledgerEntries: ledgerEntries
         };
-        
+
         setSubscription(subscriptionDetails);
-      
-        console.log("Payment docs:", data.documents);
-        console.log("total:", data.total);
-
-        try {
-          if (data.documents) {
-            const paymentDetails = data.documents.map((payment: any) => ({
-              date: payment.date,  // Changed from paymentDetails.date to payment.date
-              creditedGold: payment.creditedGold,
-              status: payment.status
-            }));
-            setPaymentDetailsArray(prev => [...prev, ...paymentDetails]);
-            console.log("Payment details:", paymentDetailsArray);
-          }
-        } catch (error) {
-          console.error("Error fetching payment details:", error);
-        }
         
-
+        // Calculate and set summary statistics
+        setSummary(calculateSummary(subscriptionDetails));
 
       } catch (err: any) {
-        console.error("Error fetching subscription details:", err);
-        setError(err.message || "Failed to load subscription details.");
+        console.error('Error fetching subscription details:', err);
+        setError(err.message || 'Failed to load subscription details.');
       } finally {
         setLoading(false);
       }
@@ -176,11 +261,28 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   }, [effectiveSubscriptionId]);
 
   if (loading) {
-    return <p className="text-center py-4">Loading subscription details...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+        <p className="mt-4 text-gray-600">Loading subscription details...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-red-500 text-center py-4">{error}</p>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="bg-red-50 border border-red-200 p-4 rounded-md text-red-700">
+          <p>{error}</p>
+          <button 
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!subscription) {
@@ -188,89 +290,204 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   }
 
   return (
-    <>
-      <div className="card shadow-sm bg-white rounded-lg p-3">
-        <div className="card-body p-4">
-          <div className="grid grid-cols-3 gap-6">
-            <p>
-              <strong>Plan Name:</strong> {subscription.plan.planName}
-            </p>
-            <p>
-              <strong>Plan Type:</strong> {subscription.plan.planType}
-            </p>
-            <p>
-              <strong>Investment Cycle:</strong> {subscription.plan.investmentCycle}
-            </p>
-            <p>
-              <strong>Investment Period:</strong> {subscription.plan.investmentPeriod} months
-            </p>
-            <p>
+    <div className="container mx-auto px-4 py-8">
+      {/* Subscription Details Card */}
+      <div className="card shadow-sm bg-white rounded-lg p-6 mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Subscription Details</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <p className="mb-2"><strong>Plan Name:</strong> {subscription.plan.planName}</p>
+            <p className="mb-2"><strong>Plan Type:</strong> {subscription.plan.planType}</p>
+            <p className="mb-2"><strong>Investment Cycle:</strong> {subscription.plan.investmentCycle}</p>
+          </div>
+          <div>
+            <p className="mb-2"><strong>Investment Period:</strong> {subscription.plan.investmentPeriod} months</p>
+            <p className="mb-2">
               <strong>Monthly Investment:</strong> {formatMonthlyInvestment(
-                subscription.monthlyInvestment, 
+                subscription.monthlyInvestment,
                 subscription.plan.investmentMode
               )}
             </p>
-            <p>
-              <strong>Lock-in Period:</strong> {subscription.plan.lockinPeriod} months
-            </p>
-            <p>
+            <p className="mb-2"><strong>Lock-in Period:</strong> {subscription.plan.lockinPeriod} months</p>
+          </div>
+          <div>
+            <p className="mb-2">
               <strong>Minimum Investment:</strong> {formatMonthlyInvestment(
-                subscription.plan.minimumInvestment, 
+                subscription.plan.minimumInvestment,
                 subscription.plan.investmentMode
               )}
             </p>
-            <p>
-              <strong>Bonus Percentage:</strong> {subscription.plan.bonusPercentage}%
-            </p>
-            <p>
-              <strong>Status:</strong> {subscription.isActive ? "Active" : "Inactive"}
+            <p className="mb-2"><strong>Bonus Percentage:</strong> {subscription.plan.bonusPercentage}%</p>
+            <p className="mb-2">
+              <strong>Status:</strong> 
+              <span className={`ml-2 px-2 py-1 rounded text-sm ${subscription.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                {subscription.isActive ? 'Active' : 'Inactive'}
+              </span>
             </p>
           </div>
         </div>
       </div>
-      <div className="pt-6">
-        <div className="card bg-white rounded-lg shadow-sm p-3">
-          <div className="card-header">
-            <h2 className="text-lg font-semibold">Payment History</h2>
-          </div>
-          <div className="card-body">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {paymentDetailsArray.map((payment, index) => (
-                <div key={index} className="card shadow-md rounded-lg p-4 bg-white">
-                  <div className="card-body">
-                    <div className="text-right">
-                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                        payment.status === true
-                        ? "bg-green-50 text-green-700 ring-green-600/20" 
-                        : "bg-yellow-50 text-yellow-700 ring-yellow-600/20"
-                      }`}>
-                        {payment.status === true ? "Completed" : "Pending"}
-                      </span>
-                    </div>
-                    <h2 className="text-lg font-semibold mt-2">
-                      {payment.creditedGold}g
-                    </h2>
-                    <div className="pt-4">
-                      <h3 className="text-sm font-semibold text-gray-500">Payment Date</h3>
-                      <p className="text-gray-800">{payment.date}</p>
-                    </div>
-                    <div className="pt-2">
-                      <h3 className="text-sm font-semibold text-gray-500">Plan</h3>
-                      <p className="text-gray-800">{subscription.plan.planName}</p>
-                    </div>
-                    <button
-                        onClick={() => makePayment(subscription.monthlyInvestment)}
-                        className="w-full rounded-lg bg-primary py-3 font-medium text-white transition-all hover:from-blue-700 hover:to-blue-600 hover:shadow-md"
-                      >
-                        Make Payment
-                    </button>
-                  </div>
-                </div>
-              ))}
+
+      {/* Investment Summary Card */}
+      {summary && (
+        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl shadow-lg p-6 mb-8 text-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-blue-100">Total Investment Plan</p>
+              <p className="text-3xl font-bold">
+                {formatMonthlyInvestment(summary.totalInvestmentValue, subscription.plan.investmentMode)}
+              </p>
+            </div>
+            <div>
+              <p className="text-blue-100">Paid Amount</p>
+              <p className="text-3xl font-bold">
+                {formatMonthlyInvestment(summary.totalPaid, subscription.plan.investmentMode)}
+              </p>
+              <p className="text-sm text-blue-100 mt-1">
+                {summary.completionPercentage.toFixed(1)}% complete
+              </p>
+            </div>
+            <div>
+              <p className="text-blue-100">Gold Credited</p>
+              <p className="text-3xl font-bold">{summary.totalCreditedGold.toFixed(2)}g</p>
             </div>
           </div>
+
+          {summary.upcomingPayment && (
+            <div className="mt-6 pt-6 border-t border-blue-400">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-blue-100">Next Payment Due</p>
+                  <p className="font-medium">{formatDate(summary.upcomingPayment.date)}</p>
+                </div>
+                <button 
+                  className="px-4 py-2 bg-white text-blue-700 rounded-md hover:bg-blue-50 transition-colors flex items-center"
+                  onClick={() => makePayment(summary.upcomingPayment?.$id || '')}
+                  disabled={processingPayment || !summary.upcomingPayment}
+                >
+                  {processingPayment && activeEntryId === summary.upcomingPayment?.$id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Pay Now
+                      <CreditCard className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Payment History */}
+      <div className="card bg-white rounded-lg shadow-sm p-6">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Payment History</h2>
+        </div>
+        
+        {subscription.ledgerEntries && subscription.ledgerEntries.length > 0 ? (
+          <div className="space-y-4">
+            {subscription.ledgerEntries.map((entry) => {
+              const isPast = new Date(entry.date) < new Date();
+              const isProcessing = processingPayment && activeEntryId === entry.$id;
+              
+              return (
+                <div 
+                  key={entry.$id} 
+                  className={`border rounded-lg p-4 transition-all ${
+                    isPast && !entry.status ? 'bg-red-50 border-red-200' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <div className="flex items-center mb-2 md:mb-0">
+                      <Calendar className="h-5 w-5 text-gray-500 mr-2" />
+                      <span className="font-medium">{formatDate(entry.date)}</span>
+                      {isPast && !entry.status && (
+                        <span className="ml-2 px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">Overdue</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center space-x-4">
+                      <div className="text-sm text-gray-600">
+                        <span className="font-medium">Amount:</span> {formatMonthlyInvestment(
+                          subscription.monthlyInvestment,
+                          subscription.plan.investmentMode
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="text-sm font-medium mr-2">Status:</span>
+                        {entry.status ? (
+                          <div className="flex items-center text-green-600">
+                            <CheckCircle className="h-5 w-5 mr-1" />
+                            <span>Paid</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center text-gray-500">
+                            <XCircle className="h-5 w-5 mr-1" />
+                            <span>Pending</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {!entry.status && (
+                        <button 
+                          className={`px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm flex items-center ${
+                            isProcessing ? 'opacity-75 cursor-not-allowed' : ''
+                          }`}
+                          onClick={() => {
+                            if (!isProcessing) {
+                              makePayment(entry.$id);
+                            }
+                          }}
+                          disabled={isProcessing}
+                        >
+                          {isProcessing ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            'Pay Now'
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {entry.creditedGold > 0 && (
+                    <div className="mt-2 flex items-center text-yellow-600">
+                      <ArrowDown className="h-4 w-4 mr-1" />
+                      <span>{entry.creditedGold}g Gold credited</span>
+                    </div>
+                  )}
+                  
+                  {entry.transaction && (
+                    <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
+                      <p className="text-gray-600">
+                        <span className="font-medium">Transaction ID:</span> {entry.transaction.id}
+                      </p>
+                      {entry.transaction.date && (
+                        <p className="text-gray-600">
+                          <span className="font-medium">Transaction Date:</span> {formatDate(entry.transaction.date)}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-8 text-center text-gray-500">
+            <p>No payment history available.</p>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
