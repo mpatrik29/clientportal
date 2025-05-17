@@ -32,6 +32,7 @@ export default function SubscriptionsCards() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'accept': '*/*',
             'x-appwrite-jwt': jwt.jwt
           }
         });
