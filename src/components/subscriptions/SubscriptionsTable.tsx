@@ -4,6 +4,11 @@ import React, { useEffect, useState } from "react";
 import { account } from "@/app/appwrite";
 import { useRouter } from "next/navigation";
 
+import { ExecutionMethod } from "appwrite";
+
+
+import { Client, Functions } from "appwrite";
+
 type Subscription = {
   $id: string;
   monthlyInvestment: number;
@@ -23,6 +28,37 @@ export default function SubscriptionsCards() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+
+
+  const client = new Client();
+
+  const functions = new Functions(client);
+
+  client
+      .setProject('681bddc10025a048377e') // Your project ID
+  ;
+
+  const promise = functions.createExecution(
+          '682861dc3af8440b42df',  // functionId
+          '',
+          false,  // async (optional)
+          '/subscription',  // path (optional)
+          ExecutionMethod.GET,  // method (optional)
+          {
+            'Content-Type': 'application/json',
+            'accept': '*/*',
+            'x-appwrite-jwt': account.createJWT().then((jwt) => jwt.jwt)
+
+          } // headers (optional)
+      );
+
+  promise.then(function (response) {
+      console.log(response); // Success
+  }, function (error) {
+      console.log(error); // Failure
+  });
+
 
   useEffect(() => {
     const fetchSubscriptions = async () => {
