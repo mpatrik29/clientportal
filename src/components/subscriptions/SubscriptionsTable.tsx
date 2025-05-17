@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ExecutionMethod } from "appwrite";
 
 
-import { Client, Functions } from "appwrite";
+import { Client, Functions , AppwriteException } from "appwrite";
 
 type Subscription = {
   $id: string;
@@ -33,17 +33,21 @@ export default function SubscriptionsCards() {
 
   const client = new Client();
 
-  const functions = new Functions(client);
-
+  
   client
       .setEndpoint('https://fra.cloud.appwrite.io/v1')
       .setProject('681bddc10025a048377e') // Your project ID
   ;
 
-  const promise = functions.createExecution(
+useEffect(() => {
+
+  const functions = new Functions(client);
+
+  try {
+        const promise = functions.createExecution(
           '682861dc3af8440b42df',  // functionId
           '',
-          false,  // async (optional)
+          true,  // async (optional)
           '/subscription',  // path (optional)
           ExecutionMethod.GET,  // method (optional)
           {
@@ -52,61 +56,75 @@ export default function SubscriptionsCards() {
             'x-appwrite-user-jwt': account.createJWT().then((jwt) => jwt.jwt),
             'x-appwrite-user-id': account.get().then((user) => user.$id)
           } // headers (optional)
-      );
+        );
 
-  promise.then(function (response) {
-      console.log(response); // Success
-  }, function (error) {
-      console.log(error); // Failure
-  });
+        promise.then(function (response) {
+          console.log(response); // Success
 
-
-  useEffect(() => {
-    const fetchSubscriptions = async () => {
-      try {
-        const jwt = await account.createJWT();
-        const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'accept': '*/*',
-            'x-appwrite-jwt': jwt.jwt
-          },
-          credentials: 'include', // If you need to send cookies
-          mode: 'cors' // Explicitly set CORS mode
+        }, function (error) {
+          console.log(error); // Failure
         });
+  }
+  catch ( error) {
+    console.error("Error creating execution:", error);
+    setError("Failed to create execution.");
+  }
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
-        }
+  // setLoading(true);
 
-        const data = await response.json();
+  setLoading(false)
+
+
+});
+
+  
+
+  // useEffect(() => {
+  //   const fetchSubscriptions = async () => {
+  //     try {
+  //       const jwt = await account.createJWT();
+  //       const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription', {
+  //         method: 'GET',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'accept': '*/*',
+  //           'x-appwrite-jwt': jwt.jwt
+  //         },
+  //         credentials: 'include', // If you need to send cookies
+  //         mode: 'cors' // Explicitly set CORS mode
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
+  //       }
+
+  //       const data = await response.json();
         
-        const subscriptionsWithDetails = data.map((subscription: any) => ({
-          $id: subscription.$id,
-          monthlyInvestment: subscription.monthlyInvestment,
-          isActive: subscription.isActive,
-          startDate: subscription.$createdAt,
-          plan: {
-            planName: subscription.plan.planName,
-            planType: subscription.plan.planType,
-            investmentCycle: subscription.plan.investmentCycle,
-            lockinPeriod: subscription.plan.lockinPeriod,
-            investmentPeriod: subscription.plan.investmentPeriod,
-          },
-        }));
+  //       const subscriptionsWithDetails = data.map((subscription: any) => ({
+  //         $id: subscription.$id,
+  //         monthlyInvestment: subscription.monthlyInvestment,
+  //         isActive: subscription.isActive,
+  //         startDate: subscription.$createdAt,
+  //         plan: {
+  //           planName: subscription.plan.planName,
+  //           planType: subscription.plan.planType,
+  //           investmentCycle: subscription.plan.investmentCycle,
+  //           lockinPeriod: subscription.plan.lockinPeriod,
+  //           investmentPeriod: subscription.plan.investmentPeriod,
+  //         },
+  //       }));
 
-        setSubscriptions(subscriptionsWithDetails);
-      } catch (err: any) {
-        console.error("Error fetching subscriptions:", err);
-        setError(err.message || "Failed to load subscriptions.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setSubscriptions(subscriptionsWithDetails);
+  //     } catch (err: any) {
+  //       console.error("Error fetching subscriptions:", err);
+  //       setError(err.message || "Failed to load subscriptions.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchSubscriptions();
-  }, []);
+  //   fetchSubscriptions();
+  // }, []);
 
   if (loading) {
     return (

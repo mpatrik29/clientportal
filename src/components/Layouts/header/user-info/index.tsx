@@ -59,7 +59,7 @@ export function UserInfo() {
                 "rotate-180 transition-transform",
                 isOpen && "rotate-0",
               )}
-              strokeWidth={1.5}
+              stroke-width={1.5}
             />
           </figcaption>
         </figure>
