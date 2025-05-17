@@ -34,7 +34,9 @@ export default function SubscriptionsCards() {
             'Content-Type': 'application/json',
             'accept': '*/*',
             'x-appwrite-jwt': jwt.jwt
-          }
+          },
+          credentials: 'include', // If you need to send cookies
+          mode: 'cors' // Explicitly set CORS mode
         });
 
         if (!response.ok) {
