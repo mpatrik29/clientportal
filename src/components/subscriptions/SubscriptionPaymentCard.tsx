@@ -104,6 +104,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
 
       try {
         const jwt = await account.createJWT();
+        console.log("JWT:", jwt.jwt);
         const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription/details', {
           method: 'POST',
           headers: {
