@@ -39,92 +39,55 @@ export default function SubscriptionsCards() {
       .setProject('68288a22003b3979af8d') // Your project ID
   ;
 
-useEffect(() => {
-
-  const functions = new Functions(client);
-
-  try {
-        const promise = functions.createExecution(
-          '6828ab7b0020bcf67a75',  // functionId
-          '',
-          true,  // async (optional)
-          '/subscription',  // path (optional)
-          ExecutionMethod.GET,  // method (optional)
-          {
-            'Content-Type': 'application/json',
-            'accept': '*/*',
-            'x-appwrite-user-jwt': account.createJWT().then((jwt) => jwt.jwt),
-            'x-appwrite-user-id': account.get().then((user) => user.$id)
-          } // headers (optional)
-        );
-
-        promise.then(function (response) {
-          console.log(response); // Success
-
-        }, function (error) {
-          console.log(error); // Failure
-        });
-  }
-  catch ( error) {
-    console.error("Error creating execution:", error);
-    setError("Failed to create execution.");
-  }
-
-  // setLoading(true);
-
-  setLoading(false)
-
-
-},[]);
 
   
 
-  // useEffect(() => {
-  //   const fetchSubscriptions = async () => {
-  //     try {
-  //       const jwt = await account.createJWT();
-  //       const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscription', {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'accept': '*/*',
-  //           'x-appwrite-jwt': jwt.jwt
-  //         },
-  //         credentials: 'include', // If you need to send cookies
-  //         mode: 'cors' // Explicitly set CORS mode
-  //       });
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        const jwt = await account.createJWT();
+        const response = await fetch('https://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': '*/*',
+            'x-appwrite-jwt': jwt.jwt
+          },
+          credentials: 'include', // If you need to send cookies
+          mode: 'cors' // Explicitly set CORS mode
+        });
 
-  //       if (!response.ok) {
-  //         throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
-  //       }
+        if (!response.ok) {
+          throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
+        }
 
-  //       const data = await response.json();
+        const data = await response.json();
         
-  //       const subscriptionsWithDetails = data.map((subscription: any) => ({
-  //         $id: subscription.$id,
-  //         monthlyInvestment: subscription.monthlyInvestment,
-  //         isActive: subscription.isActive,
-  //         startDate: subscription.$createdAt,
-  //         plan: {
-  //           planName: subscription.plan.planName,
-  //           planType: subscription.plan.planType,
-  //           investmentCycle: subscription.plan.investmentCycle,
-  //           lockinPeriod: subscription.plan.lockinPeriod,
-  //           investmentPeriod: subscription.plan.investmentPeriod,
-  //         },
-  //       }));
+        const subscriptionsWithDetails = data.map((subscription: any) => ({
+          $id: subscription.$id,
+          monthlyInvestment: subscription.monthlyInvestment,
+          isActive: subscription.isActive,
+          startDate: subscription.$createdAt,
+          plan: {
+            planName: subscription.plan.planName,
+            planType: subscription.plan.planType,
+            investmentCycle: subscription.plan.investmentCycle,
+            lockinPeriod: subscription.plan.lockinPeriod,
+            investmentPeriod: subscription.plan.investmentPeriod,
+          },
+        }));
 
-  //       setSubscriptions(subscriptionsWithDetails);
-  //     } catch (err: any) {
-  //       console.error("Error fetching subscriptions:", err);
-  //       setError(err.message || "Failed to load subscriptions.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+        setSubscriptions(subscriptionsWithDetails);
+      } catch (err: any) {
+        console.error("Error fetching subscriptions:", err);
+        setError(err.message || "Failed to load subscriptions.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  //   fetchSubscriptions();
-  // }, []);
+    fetchSubscriptions();
+  }, []);
 
   if (loading) {
     return (
