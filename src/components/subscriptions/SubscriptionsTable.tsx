@@ -35,8 +35,8 @@ export default function SubscriptionsCards() {
 
   
   client
-      .setEndpoint('https://fra.cloud.appwrite.io/v1')
-      .setProject('681bddc10025a048377e') // Your project ID
+      .setEndpoint('https://appwrite.viewdns.net/v1') // Your API Endpoint
+      .setProject('68288a22003b3979af8d') // Your project ID
   ;
 
 useEffect(() => {
@@ -45,7 +45,7 @@ useEffect(() => {
 
   try {
         const promise = functions.createExecution(
-          '682861dc3af8440b42df',  // functionId
+          '6828ab7b0020bcf67a75',  // functionId
           '',
           true,  // async (optional)
           '/subscription',  // path (optional)
@@ -75,7 +75,7 @@ useEffect(() => {
   setLoading(false)
 
 
-});
+},[]);
 
   
 
