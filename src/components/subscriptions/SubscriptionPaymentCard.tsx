@@ -248,7 +248,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         
         // Calculate and set summary statistics
         setSummary(calculateSummary(subscriptionDetails));
-
+        console.log('Summery:', summary);
       } catch (err: any) {
         console.error('Error fetching subscription details:', err);
         setError(err.message || 'Failed to load subscription details.');
