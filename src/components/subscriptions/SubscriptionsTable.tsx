@@ -46,7 +46,7 @@ export default function SubscriptionsCards() {
     const fetchSubscriptions = async () => {
       try {
         const jwt = await account.createJWT();
-        const response = await fetch('https://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription', {
+        const response = await fetch('http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
