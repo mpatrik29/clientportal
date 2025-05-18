@@ -701,7 +701,7 @@ const processFlexiblePayment = async (amount: number) => {
       <FixedPaymentModal
         isOpen={showFixedModal}
         onClose={() => setShowFixedModal(false)}
-        onConfirm={(entryId, paymentAmount) => makePayment(entryId, paymentAmount)}
+        onConfirm={(activeEntryId, paymentAmount) => makePayment(activeEntryId, paymentAmount)}
         isProcessing={processingFixedPayment}
         subscriptionDetails={{
           minPayment: subscription?.plan.minimumInvestment || 0,
