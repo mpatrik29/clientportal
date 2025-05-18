@@ -239,8 +239,8 @@ const processFlexiblePayment = async (amount: number) => {
       subscriptionId: subscription.$id,
       paymentDetails: {
         amountPaid: amount,
-        paymentType: "CARD",
-        pspResponse: `FLEX_REF_${Date.now()}`,
+        paymentMethod: "CARD",
+        paymentReference: `FLEX_REF_${Date.now()}`,
       }
     };
 
