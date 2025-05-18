@@ -12,6 +12,7 @@ import { RegionLabels } from "./_components/region-labels";
 import TradingViewWidget from "@/components/Charts/tradingview/TradingViewWidget";
 import StatusCards from "@/components/Dashboard/StatusCards";
 import SubscriptionsTable from "@/components/subscriptions/SubscriptionsTable";
+import WelcomeCard from "./_components/overview-cards/welcomeCard";
 
 type PropsType = {
   searchParams: Promise<{
@@ -25,7 +26,7 @@ export default async function Home({ searchParams }: PropsType) {
 
   return (
     <>
-      
+      <WelcomeCard userName={localStorage.name}/>
       <Suspense fallback={<OverviewCardsSkeleton />}>
         <OverviewCardsGroup />
       </Suspense>

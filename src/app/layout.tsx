@@ -20,7 +20,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
   const pathname = usePathname();
 
   // Define routes where Sidebar and Header should not be displayed
-  const noLayoutRoutes = ["/", "/signin", "/login", "/signup"];
+  const noLayoutRoutes = ["/", "/signin", "/login", "/signup", "/authenticate"];
 
   const shouldShowLayout = !noLayoutRoutes.includes(pathname);
 
