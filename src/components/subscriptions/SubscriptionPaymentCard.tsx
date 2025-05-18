@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { account } from '@/app/appwrite';
 import { useParams } from 'next/navigation';
 import { Calendar, Loader2, CheckCircle, XCircle, ArrowDown, CreditCard, Plus } from 'lucide-react';
+import { useToast } from '@/components/toast/toast';
 
 type Plan = {
   planName: string;
@@ -71,6 +72,10 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
   const [addingFlexiblePayment, setAddingFlexiblePayment] = useState(false);
 
+
+  const { showToast } = useToast();
+
+
   // Format monthly investment based on investment mode
   const formatMonthlyInvestment = (investment: number, mode?: string) => {
     switch (mode) {
@@ -129,53 +134,92 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
     };
   };
 
-  // Process a payment
-  const makePayment = async (entryId: string) => {
-    setProcessingPayment(true);
-    setActiveEntryId(entryId);
+// Process a payment
+const makePayment = async (entryId: string) => {
+  setProcessingPayment(true);
+  setActiveEntryId(entryId);
 
-    try {
-      // In a real implementation, this would call your API endpoint
-      // For now, we'll simulate a successful payment after a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      if (!subscription) return;
-      
-      // Update local state to reflect the payment
-      const updatedLedgerEntries = subscription.ledgerEntries?.map(entry => {
-        if (entry.$id === entryId) {
-          return {
-            ...entry,
-            status: true,
-            creditedGold: Math.round((subscription.monthlyInvestment / 8000) * 100) / 100, // Simulated gold credit
-            transaction: {
-              id: `txn_${Date.now()}`,
-              date: new Date().toISOString(),
-              amount: subscription.monthlyInvestment
-            }
-          };
-        }
-        return entry;
-      });
-      
-      const updatedSubscription = {
-        ...subscription,
-        ledgerEntries: updatedLedgerEntries
-      };
-      
-      setSubscription(updatedSubscription);
-      setSummary(calculateSummary(updatedSubscription));
-      
-      // In a real implementation, you'd show a success toast/notification
-      alert('Payment processed successfully!');
-    } catch (err: any) {
-      console.error('Error processing payment:', err);
-      alert('Payment failed. Please try again.');
-    } finally {
-      setProcessingPayment(false);
-      setActiveEntryId(null);
+  try {
+    if (!subscription) return;
+    
+    // Prepare the payment payload
+    const paymentPayload = {
+      subscriptionId: subscription.$id,
+      ledgerEntryId: entryId,
+      paymentDetails: {
+        amount: subscription.monthlyInvestment,
+        method: "ONLINE", // Or use a payment method selector in your UI
+        reference: `REF_${Date.now()}`, // Generate a reference or get from payment gateway
+        notes: "Regular payment"
+      }
+    };
+
+    const jwt = await account.createJWT();
+    // Make the API call to process payment
+    const response = await fetch(`http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/payment/request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-appwrite-jwt': jwt.jwt
+      },
+      body: JSON.stringify(paymentPayload)
+    });
+
+    // Parse the response
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.message || 'Payment processing failed');
     }
-  };
+    
+    // After successful payment request, fetch the updated subscription details
+    await fetchSubscriptionDetails(subscription.$id);
+    
+    // Show success message
+    showToast('Payment processed successfully!', 'success');
+    
+    
+  } catch (err: any) {
+    console.error('Error processing payment:', err);
+    showToast('SPayment failed. Please try again!', 'error');
+  } finally {
+    setProcessingPayment(false);
+    setActiveEntryId(null);
+  }
+};
+
+// Fetch updated subscription details after payment
+const fetchSubscriptionDetails = async (subscriptionId: string) => {
+  try {
+    const jwt = await account.createJWT();
+    const response = await fetch(`http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription/details`, {
+      method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-appwrite-jwt': jwt.jwt
+          },
+      body: JSON.stringify({ subscriptionId })
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to fetch subscription details');
+    }
+    
+    // Update the subscription state with fresh data
+    setSubscription(result);
+    setSummary(calculateSummary(result));
+    
+  } catch (err: any) {
+    console.error('Error fetching subscription details:', err);
+    
+ 
+    showToast('Failed to update subscription information', 'error');
+  }
+};
+
+
 
   // Add a new flexible payment entry
   const addFlexiblePayment = async () => {
@@ -348,6 +392,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
 
   return (
     <div className="container mx-auto px-4 py-8">
+      
       {/* Subscription Details Card */}
       <div className="card shadow-sm bg-white rounded-lg p-6 mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Subscription Details</h2>
