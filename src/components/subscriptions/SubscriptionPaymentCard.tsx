@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { account } from '@/app/appwrite';
 import { useParams } from 'next/navigation';
-import { Calendar, Loader2, CheckCircle, XCircle, ArrowDown, CreditCard } from 'lucide-react';
-import { cp } from 'fs';
+import { Calendar, Loader2, CheckCircle, XCircle, ArrowDown, CreditCard, Plus } from 'lucide-react';
 
 type Plan = {
   planName: string;
@@ -70,6 +69,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   const [processingPayment, setProcessingPayment] = useState(false);
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
+  const [addingFlexiblePayment, setAddingFlexiblePayment] = useState(false);
 
   // Format monthly investment based on investment mode
   const formatMonthlyInvestment = (investment: number, mode?: string) => {
@@ -174,6 +174,51 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
     } finally {
       setProcessingPayment(false);
       setActiveEntryId(null);
+    }
+  };
+
+  // Add a new flexible payment entry
+  const addFlexiblePayment = async () => {
+    setAddingFlexiblePayment(true);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+
+      if (!subscription) return;
+
+      // Create a new entry
+      const newEntry: LedgerEntry = {
+        $id: `entry_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        date: new Date().toISOString(),
+        creditedGold: 0,
+        status: false
+      };
+
+      // Update subscription with the new entry
+      const updatedEntries = [...(subscription.ledgerEntries || []), newEntry];
+      const updatedSubscription = {
+        ...subscription,
+        ledgerEntries: updatedEntries
+      };
+
+      setSubscription(updatedSubscription);
+      setSummary(calculateSummary(updatedSubscription));
+
+      // Auto-scroll to the new payment entry
+      setTimeout(() => {
+        const element = document.getElementById(newEntry.$id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('highlight-new-entry');
+        }
+      }, 100);
+
+      alert('New payment entry added! You can now make this payment.');
+    } catch (err) {
+      console.error('Error adding flexible payment:', err);
+      alert('Failed to add payment. Please try again.');
+    } finally {
+      setAddingFlexiblePayment(false);
     }
   };
 
@@ -299,6 +344,8 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
     return <p className="text-center py-4">No subscription found.</p>;
   }
 
+  const isFlexiblePlan = subscription.plan.planType.toLowerCase() === 'flexible';
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Subscription Details Card */}
@@ -363,13 +410,24 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
             </div>
           </div>
 
-          {summary.upcomingPayment && (
-            <div className="mt-6 pt-6 border-t border-blue-400">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-blue-100">Next Payment Due</p>
-                  <p className="font-medium">{formatDate(summary.upcomingPayment.date)}</p>
-                </div>
+          <div className="mt-6 pt-6 border-t border-blue-400">
+            <div className="flex justify-between items-center">
+              <div>
+                {summary.upcomingPayment ? (
+                  <>
+                    <p className="text-blue-100">Next Payment Due</p>
+                    <p className="font-medium">{formatDate(summary.upcomingPayment.date)}</p>
+                  </>
+                ) : (
+                  <p className="text-blue-100">
+                    {isFlexiblePlan 
+                      ? "Add a payment whenever you want" 
+                      : "No upcoming payments scheduled"}
+                  </p>
+                )}
+              </div>
+              
+              {summary.upcomingPayment && (
                 <button 
                   className="px-4 py-2 bg-white text-blue-700 rounded-md hover:bg-blue-50 transition-colors flex items-center"
                   onClick={() => makePayment(summary.upcomingPayment?.$id || '')}
@@ -387,16 +445,58 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
                     </>
                   )}
                 </button>
-              </div>
+              )}
+              
+              {/* Add flexible payment button - only shows for flexible plans */}
+              {isFlexiblePlan && (
+                <button 
+                  className="px-4 py-2 bg-white text-blue-700 rounded-md hover:bg-blue-50 transition-colors flex items-center"
+                  onClick={addFlexiblePayment}
+                  disabled={addingFlexiblePayment}
+                >
+                  {addingFlexiblePayment ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Adding payment...
+                    </>
+                  ) : (
+                    <>
+                      Add New Payment
+                      <Plus className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </button>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
 
       {/* Payment History */}
       <div className="card bg-white rounded-lg shadow-sm p-6">
-        <div className="mb-4">
+        <div className="mb-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-800">Payment History</h2>
+          
+          {/* Alternative location for Add Payment button for flexible plans */}
+          {isFlexiblePlan && (
+            <button 
+              className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center text-sm"
+              onClick={addFlexiblePayment}
+              disabled={addingFlexiblePayment}
+            >
+              {addingFlexiblePayment ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Adding payment...
+                </>
+              ) : (
+                <>
+                  Add New Payment
+                  <Plus className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </button>
+          )}
         </div>
        
         {subscription.ledgerEntries && subscription.ledgerEntries.length > 0 ? (
@@ -407,7 +507,8 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
               
               return (
                 <div 
-                  key={entry.$id} 
+                  key={entry.$id}
+                  id={entry.$id}
                   className={`border rounded-lg p-4 transition-all ${
                     isPast && !entry.status ? 'bg-red-50 border-red-200' : 'border-gray-200'
                   }`}
@@ -495,9 +596,41 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         ) : (
           <div className="p-8 text-center text-gray-500">
             <p>No payment history available.</p>
+            {isFlexiblePlan && (
+              <button 
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center mx-auto"
+                onClick={addFlexiblePayment}
+                disabled={addingFlexiblePayment}
+              >
+                {addingFlexiblePayment ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Adding payment...
+                  </>
+                ) : (
+                  <>
+                    Add Your First Payment
+                    <Plus className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>
+      
+      {/* CSS for highlighting newly added payment entry */}
+      <style jsx>{`
+        @keyframes highlight {
+          0% { background-color: #dbeafe; }
+          50% { background-color: #eff6ff; }
+          100% { background-color: white; }
+        }
+        
+        .highlight-new-entry {
+          animation: highlight 2s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 }
