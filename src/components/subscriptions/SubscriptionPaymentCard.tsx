@@ -149,7 +149,7 @@ const makePayment = async (entryId: string) => {
       ledgerEntryId: entryId,
       paymentDetails: {
         amount: subscription.monthlyInvestment,
-        method: "ONLINE", // Or use a payment method selector in your UI
+        paymentMethod: "card", // Or use a payment method selector in your UI
         reference: `REF_${Date.now()}`, // Generate a reference or get from payment gateway
         notes: "Regular payment"
       }
@@ -239,7 +239,7 @@ const processFlexiblePayment = async (amount: number) => {
       subscriptionId: subscription.$id,
       paymentDetails: {
         amountPaid: amount,
-        paymentType: "card",
+        paymentType: "CARD",
         pspResponse: `FLEX_REF_${Date.now()}`,
       }
     };
