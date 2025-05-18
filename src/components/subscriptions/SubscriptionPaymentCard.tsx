@@ -208,8 +208,8 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         }
   
         // Process payment documents into ledger entries
-        const ledgerEntries = data.documents ? 
-          data.documents.map((payment:any) => ({
+        const ledgerEntries = data.ledgerEntries ? 
+          data.ledgerEntries.map((payment:any) => ({
             $id: payment.$id || `entry_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
             date: payment.date,
             creditedGold: payment.creditedGold || 0,
