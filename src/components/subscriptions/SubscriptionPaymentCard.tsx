@@ -184,7 +184,7 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
         setLoading(false);
         return;
       }
-
+  
       try {
         const jwt = await account.createJWT();
         const response = await fetch('http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription/details', {
@@ -196,20 +196,20 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
           body: JSON.stringify({ subscriptionId: effectiveSubscriptionId }),
           credentials: 'include'
         });
-
+  
         if (!response.ok) {
           throw new Error(`Failed to fetch subscription details: ${response.statusText}`);
         }
-
+  
         const data = await response.json();
-
+  
         if (!data) {
           throw new Error('No subscription found');
         }
-
+  
         // Process payment documents into ledger entries
-        const ledgerEntries: LedgerEntry[] = data.documents ? 
-          data.documents.map((payment: any) => ({
+        const ledgerEntries = data.documents ? 
+          data.documents.map((payment:any) => ({
             $id: payment.$id || `entry_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
             date: payment.date,
             creditedGold: payment.creditedGold || 0,
@@ -218,9 +218,9 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
             $createdAt: payment.$createdAt || null,
             $updatedAt: payment.$updatedAt || null
           })) : [];
-
+  
         // Create subscription object
-        const subscriptionDetails: Subscription = {
+        const subscriptionDetails = {
           $id: data.$id,
           monthlyInvestment: data.monthlyInvestment,
           isActive: data.isActive,
@@ -244,24 +244,29 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
           },
           ledgerEntries: ledgerEntries
         };
-
+  
+        // Calculate summary right here
+        const summaryData = calculateSummary(subscriptionDetails);
+  
+        // Set both states
         setSubscription(subscriptionDetails);
+        setSummary(summaryData);
         
-        // Calculate and set summary statistics
-        setSummary(calculateSummary(subscriptionDetails));
+        // Log the data we just received, not the state variables
+        console.log('Subscription details loaded successfully');
+        console.log('Subscription:', subscriptionDetails);
+        console.log('Summary:', summaryData);
+        console.log('Ledger Entries:', ledgerEntries);
         
-      } catch (err: any) {
+      } catch (err) {
+        const error = err as Error;
         console.error('Error fetching subscription details:', err);
-        setError(err.message || 'Failed to load subscription details.');
+        setError(error.message || 'Failed to load subscription details.');
       } finally {
         setLoading(false);
-        console.log('Subscription details loaded successfully');
-        console.log('Subscription:', subscription);
-        console.log('Summary:', summary);
-        console.log('Ledger Entries:', subscription?.ledgerEntries);
       }
     };
-
+  
     fetchSubscriptionDetails();
   }, [effectiveSubscriptionId]);
 
