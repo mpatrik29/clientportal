@@ -5,6 +5,7 @@ import { account } from '@/app/appwrite';
 import { useParams } from 'next/navigation';
 import { Calendar, Loader2, CheckCircle, XCircle, ArrowDown, CreditCard, Plus } from 'lucide-react';
 import { useToast } from '@/components/toast/toast';
+import FlexiblePaymentModal  from './FlexiblePaymentModal';
 
 type Plan = {
   planName: string;
@@ -220,51 +221,61 @@ const fetchSubscriptionDetails = async (subscriptionId: string) => {
 };
 
 
+// Add these state variables near the other state declarations
+const [showFlexibleModal, setShowFlexibleModal] = useState(false);
+const [processingFlexiblePayment, setProcessingFlexiblePayment] = useState(false);
 
-  // Add a new flexible payment entry
-  const addFlexiblePayment = async () => {
-    setAddingFlexiblePayment(true);
+const addFlexiblePayment = () => {
+  setShowFlexibleModal(true);
+};
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+const processFlexiblePayment = async (amount: number) => {
+  setProcessingFlexiblePayment(true);
+  
+  try {
+    if (!subscription) return;
 
-      if (!subscription) return;
+    const paymentPayload = {
+      subscriptionId: subscription.$id,
+      paymentDetails: {
+        amount: amount,
+        method: "ONLINE",
+        reference: `FLEX_REF_${Date.now()}`,
+        notes: "Flexible payment"
+      }
+    };
 
-      // Create a new entry
-      const newEntry: LedgerEntry = {
-        $id: `entry_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        date: new Date().toISOString(),
-        creditedGold: 0,
-        status: false
-      };
+    const jwt = await account.createJWT();
+    const response = await fetch(`http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/payment/request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-appwrite-jwt': jwt.jwt
+      },
+      body: JSON.stringify(paymentPayload)
+    });
 
-      // Update subscription with the new entry
-      const updatedEntries = [...(subscription.ledgerEntries || []), newEntry];
-      const updatedSubscription = {
-        ...subscription,
-        ledgerEntries: updatedEntries
-      };
-
-      setSubscription(updatedSubscription);
-      setSummary(calculateSummary(updatedSubscription));
-
-      // Auto-scroll to the new payment entry
-      setTimeout(() => {
-        const element = document.getElementById(newEntry.$id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.classList.add('highlight-new-entry');
-        }
-      }, 100);
-
-      alert('New payment entry added! You can now make this payment.');
-    } catch (err) {
-      console.error('Error adding flexible payment:', err);
-      alert('Failed to add payment. Please try again.');
-    } finally {
-      setAddingFlexiblePayment(false);
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.message || 'Payment processing failed');
     }
-  };
+    
+    await fetchSubscriptionDetails(subscription.$id);
+    showToast('Flexible payment processed successfully!', 'success');
+    
+  } catch (err: any) {
+    console.error('Error processing flexible payment:', err);
+    showToast('Flexible payment failed. Please try again!', 'error');
+  } finally {
+    setProcessingFlexiblePayment(false);
+    setShowFlexibleModal(false);
+  }
+};
+
+
+
+
 
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
@@ -495,18 +506,18 @@ const fetchSubscriptionDetails = async (subscriptionId: string) => {
               {/* Add flexible payment button - only shows for flexible plans */}
               {isFlexiblePlan && (
                 <button 
-                  className="px-4 py-2 bg-white text-blue-700 rounded-md hover:bg-blue-50 transition-colors flex items-center"
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center mx-auto"
                   onClick={addFlexiblePayment}
-                  disabled={addingFlexiblePayment}
+                  disabled={processingFlexiblePayment}
                 >
-                  {addingFlexiblePayment ? (
+                  {processingFlexiblePayment ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Adding payment...
                     </>
                   ) : (
                     <>
-                      Add New Payment
+                      Add Your First Payment
                       <Plus className="h-4 w-4 ml-2" />
                     </>
                   )}
@@ -525,22 +536,22 @@ const fetchSubscriptionDetails = async (subscriptionId: string) => {
           {/* Alternative location for Add Payment button for flexible plans */}
           {isFlexiblePlan && (
             <button 
-              className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center text-sm"
-              onClick={addFlexiblePayment}
-              disabled={addingFlexiblePayment}
-            >
-              {addingFlexiblePayment ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Adding payment...
-                </>
-              ) : (
-                <>
-                  Add New Payment
-                  <Plus className="h-4 w-4 ml-2" />
-                </>
-              )}
-            </button>
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center mx-auto"
+                onClick={addFlexiblePayment}
+                disabled={processingFlexiblePayment}
+              >
+                {processingFlexiblePayment ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Adding payment...
+                  </>
+                ) : (
+                  <>
+                    Add Your First Payment
+                    <Plus className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </button>
           )}
         </div>
        
@@ -645,9 +656,9 @@ const fetchSubscriptionDetails = async (subscriptionId: string) => {
               <button 
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center mx-auto"
                 onClick={addFlexiblePayment}
-                disabled={addingFlexiblePayment}
+                disabled={processingFlexiblePayment}
               >
-                {addingFlexiblePayment ? (
+                {processingFlexiblePayment ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Adding payment...
@@ -663,6 +674,17 @@ const fetchSubscriptionDetails = async (subscriptionId: string) => {
           </div>
         )}
       </div>
+
+      <FlexiblePaymentModal
+      isOpen={showFlexibleModal}
+      onClose={() => setShowFlexibleModal(false)}
+      onConfirm={addFlexiblePayment}
+      isProcessing={processingFlexiblePayment}
+      subscriptionDetails={{
+        minPayment: subscription?.plan.minimumInvestment,
+        goldRate: 8000 // You can get this from your API or config
+      }}
+    />
       
       {/* CSS for highlighting newly added payment entry */}
       <style jsx>{`
