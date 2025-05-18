@@ -707,7 +707,8 @@ const processFlexiblePayment = async (amount: number) => {
           minPayment: subscription?.plan.minimumInvestment || 0,
           monthlyInvestment: subscription?.monthlyInvestment || 0,
           goldRate: subscription?.goldRate || 8000,
-          investmentMode: subscription.plan.investmentMode || 'by_amount'
+          investmentMode: subscription.plan.investmentMode || 'by_amount',
+          ledgerEntryId: activeEntryId  || ''
         }}
       />
 

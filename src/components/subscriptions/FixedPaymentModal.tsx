@@ -10,6 +10,7 @@ interface FixedPaymentModalProps {
     goldRate?: number;
     investmentMode?: string;
     minPayment?: number;
+    ledgerEntryId?:string;
   };
 }
 
@@ -22,7 +23,8 @@ const FixedPaymentModal = ({
     monthlyInvestment: 1000, 
     goldRate: 8000,
     investmentMode: 'byAmount',
-    minPayment: 1000
+    minPayment: 1000,
+    ledgerEntryId: ''
   }
 }: FixedPaymentModalProps) => {
   const [paymentAmount, setPaymentAmount] = useState<number>(subscriptionDetails.monthlyInvestment || 1000);
@@ -99,6 +101,7 @@ const FixedPaymentModal = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Make a Flexible Payment</h3>
+          <p>Ledger Entry ID: </p>
         </div>
         
         {/* Content */}
