@@ -1,6 +1,23 @@
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-const WelcomeCard = ({ userName }: { userName: string }) => {
+const WelcomeCard = () => {
+
+ const [USER, setUSER] = useState({
+    name: "John Doe",
+    email: "",
+    emailVerified:false,
+    identityVerified:false,
+    activePlans:0
+  });
+
+
+  useEffect(() =>{
+    const name = localStorage.getItem('name') || 'Friend'
+  })
+
+  // get the user details from localstorage on page load
+
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
       <div className="flex flex-col md:flex-row justify-between gap-6">

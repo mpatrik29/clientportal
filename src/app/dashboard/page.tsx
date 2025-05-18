@@ -28,7 +28,7 @@ export default async function Home({ searchParams }: PropsType) {
 
   return (
     <>
-      <WelcomeCard userName={localStorage.name}/>
+      <WelcomeCard />
       <Suspense fallback={<OverviewCardsSkeleton />}>
         <OverviewCardsGroup />
       </Suspense>
