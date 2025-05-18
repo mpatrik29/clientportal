@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { Calendar, Loader2, CheckCircle, XCircle, ArrowDown, CreditCard, Plus } from 'lucide-react';
 import { useToast } from '@/components/toast/toast';
 import FlexiblePaymentModal  from './FlexiblePaymentModal';
+import FixedPaymentModal from './FixedPaymentModal';
 
 type Plan = {
   planName: string;
@@ -22,6 +23,9 @@ type Plan = {
   $updatedAt?: string;
 };
 
+// enum to manage the investmentMode
+
+
 type Subscription = {
   $id: string;
   monthlyInvestment: number;
@@ -32,6 +36,7 @@ type Subscription = {
   userId?: string;
   $createdAt?: string;
   $updatedAt?: string;
+  goldRate?: number; // Adding goldRate property that was referenced but not defined
 };
 
 type LedgerEntry = {
@@ -72,6 +77,12 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
   const [addingFlexiblePayment, setAddingFlexiblePayment] = useState(false);
+
+
+  // Add these new state variables to your component
+const [showFixedModal, setShowFixedModal] = useState(false);
+const [processingFixedPayment, setProcessingFixedPayment] = useState(false);
+
 
 
   const { showToast } = useToast();
@@ -136,10 +147,10 @@ export default function SubscriptionPaymentCard({ subscriptionId }: Subscription
   };
 
 // Process a payment
-const makePayment = async (entryId: string) => {
+const makePayment = async (entryId: string, amount: number) => {
   setProcessingPayment(true);
-  setActiveEntryId(entryId);
 
+  setProcessingFixedPayment(true);
   try {
     if (!subscription) return;
     
@@ -149,7 +160,7 @@ const makePayment = async (entryId: string) => {
       ledgerEntryId: entryId,
       paymentDetails: {
         amount: subscription.monthlyInvestment,
-        paymentMethod: "card", // Or use a payment method selector in your UI
+        paymentMethod: "CARD", // Or use a payment method selector in your UI
         reference: `REF_${Date.now()}`, // Generate a reference or get from payment gateway
         notes: "Regular payment"
       }
@@ -158,7 +169,7 @@ const makePayment = async (entryId: string) => {
     const jwt = await account.createJWT();
     // Make the API call to process payment
     const response = await fetch(`http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/payment/request`, {
-      method: 'POST',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'x-appwrite-jwt': jwt.jwt
@@ -176,16 +187,20 @@ const makePayment = async (entryId: string) => {
     // After successful payment request, fetch the updated subscription details
     await fetchSubscriptionDetails(subscription.$id);
     
+    setShowFixedModal(false);  
+
     // Show success message
     showToast('Payment processed successfully!', 'success');
     
-    
+  
+  
   } catch (err: any) {
     console.error('Error processing payment:', err);
     showToast('SPayment failed. Please try again!', 'error');
   } finally {
     setProcessingPayment(false);
     setActiveEntryId(null);
+    setProcessingFixedPayment(false);
   }
 };
 
@@ -485,7 +500,7 @@ const processFlexiblePayment = async (amount: number) => {
               {summary.upcomingPayment && (
                 <button 
                   className="px-4 py-2 bg-white text-blue-700 rounded-md hover:bg-blue-50 transition-colors flex items-center"
-                  onClick={() => makePayment(summary.upcomingPayment?.$id || '')}
+                  onClick={() => setShowFixedModal(true)}
                   disabled={processingPayment || !summary.upcomingPayment}
                 >
                   {processingPayment && activeEntryId === summary.upcomingPayment?.$id ? (
@@ -589,7 +604,8 @@ const processFlexiblePayment = async (amount: number) => {
                           }`}
                           onClick={() => {
                             if (!isProcessing) {
-                              makePayment(entry.$id);
+                              setShowFixedModal(true);
+                              setActiveEntryId(entry.$id);
                             }
                           }}
                           disabled={isProcessing}
@@ -656,16 +672,31 @@ const processFlexiblePayment = async (amount: number) => {
         )}
       </div>
 
+      {/* Fixed Payment Modal */}
+      <FixedPaymentModal
+        isOpen={showFixedModal}
+        onClose={() => setShowFixedModal(false)}
+        onConfirm={(entryId) => makePayment(activeEntryId || '', subscription?.monthlyInvestment || 0)}
+        isProcessing={processingFixedPayment}
+        subscriptionDetails={{
+          minPayment: subscription?.plan.minimumInvestment || 0,
+          monthlyInvestment: subscription?.monthlyInvestment || 0,
+          goldRate: subscription?.goldRate || 8000,
+          investmentMode: subscription.plan.investmentMode || 'by_amount'
+        }}
+      />
+
+      {/* Flexible Payment Modal */}
       <FlexiblePaymentModal
-      isOpen={showFlexibleModal}
-      onClose={() => setShowFlexibleModal(false)}
-      onConfirm={processFlexiblePayment}
-      isProcessing={processingFlexiblePayment}
-      subscriptionDetails={{
-        minPayment: subscription?.plan.minimumInvestment,
-        goldRate: 8000 // You can get this from your API or config
-      }}
-    />
+        isOpen={showFlexibleModal}
+        onClose={() => setShowFlexibleModal(false)}
+        onConfirm={processFlexiblePayment}
+        isProcessing={processingFlexiblePayment}
+        subscriptionDetails={{
+          minPayment: subscription?.plan.minimumInvestment || 0,
+          goldRate: subscription?.goldRate || 8000 // Using subscription's goldRate if available, fallback to 8000
+        }}
+      />
       
       {/* CSS for highlighting newly added payment entry */}
       <style jsx>{`
