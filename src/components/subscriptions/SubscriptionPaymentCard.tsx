@@ -238,10 +238,9 @@ const processFlexiblePayment = async (amount: number) => {
     const paymentPayload = {
       subscriptionId: subscription.$id,
       paymentDetails: {
-        amount: amount,
-        method: "ONLINE",
-        reference: `FLEX_REF_${Date.now()}`,
-        notes: "Flexible payment"
+        amountPaid: amount,
+        paymentType: "card",
+        pspResponse: `FLEX_REF_${Date.now()}`,
       }
     };
 
@@ -678,7 +677,7 @@ const processFlexiblePayment = async (amount: number) => {
       <FlexiblePaymentModal
       isOpen={showFlexibleModal}
       onClose={() => setShowFlexibleModal(false)}
-      onConfirm={addFlexiblePayment}
+      onConfirm={processFlexiblePayment}
       isProcessing={processingFlexiblePayment}
       subscriptionDetails={{
         minPayment: subscription?.plan.minimumInvestment,
