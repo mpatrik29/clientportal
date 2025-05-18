@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 interface FixedPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (entryId: string,amount:number) => void;
+  onConfirm: () => void;
   isProcessing: boolean;
   subscriptionDetails?: {
     monthlyInvestment?: number;
@@ -66,7 +66,7 @@ const FixedPaymentModal = ({
       console.error("Entry ID is undefined");
       return;
     }
-    onConfirm(entryId, paymentAmount);
+    onConfirm();
   };
   
   const handleInputChange = (value: number) => {

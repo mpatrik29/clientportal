@@ -147,7 +147,7 @@ const [processingFixedPayment, setProcessingFixedPayment] = useState(false);
   };
 
 // Process a payment
-const makePayment = async (entryId: string, amount: number) => {
+const makePayment = async () => {
   setProcessingPayment(true);
 
   setProcessingFixedPayment(true);
@@ -701,7 +701,7 @@ const processFlexiblePayment = async (amount: number) => {
       <FixedPaymentModal
         isOpen={showFixedModal}
         onClose={() => setShowFixedModal(false)}
-        onConfirm={(activeEntryId, paymentAmount) => makePayment(activeEntryId, paymentAmount)}
+        onConfirm={ () => makePayment()}
         isProcessing={processingFixedPayment}
         subscriptionDetails={{
           minPayment: subscription?.plan.minimumInvestment || 0,
