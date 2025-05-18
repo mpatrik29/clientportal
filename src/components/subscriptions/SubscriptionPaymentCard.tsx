@@ -476,7 +476,7 @@ const processFlexiblePayment = async (amount: number) => {
                 ) : (
                   <p className="text-blue-100">
                     {isFlexiblePlan 
-                      ? "Add a payment whenever you want" 
+                      ? "" 
                       : "No upcoming payments scheduled"}
                   </p>
                 )}
@@ -503,25 +503,7 @@ const processFlexiblePayment = async (amount: number) => {
               )}
               
               {/* Add flexible payment button - only shows for flexible plans */}
-              {isFlexiblePlan && (
-                <button 
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center mx-auto"
-                  onClick={addFlexiblePayment}
-                  disabled={processingFlexiblePayment}
-                >
-                  {processingFlexiblePayment ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Adding payment...
-                    </>
-                  ) : (
-                    <>
-                      Add Your First Payment
-                      <Plus className="h-4 w-4 ml-2" />
-                    </>
-                  )}
-                </button>
-              )}
+             
             </div>
           </div>
         </div>
