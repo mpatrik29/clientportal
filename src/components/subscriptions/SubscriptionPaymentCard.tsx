@@ -157,7 +157,7 @@ const makePayment = async (entryId: string, amount: number) => {
     // Prepare the payment payload
     const paymentPayload = {
       subscriptionId: subscription.$id,
-      ledgerEntryId: entryId,
+      ledgerEntryId: activeEntryId,
       paymentDetails: {
         amount: subscription.monthlyInvestment,
         paymentMethod: "CARD", // Or use a payment method selector in your UI
@@ -676,7 +676,7 @@ const processFlexiblePayment = async (amount: number) => {
       <FixedPaymentModal
         isOpen={showFixedModal}
         onClose={() => setShowFixedModal(false)}
-        onConfirm={(entryId) => makePayment(activeEntryId || '', subscription?.monthlyInvestment || 0)}
+        onConfirm={(entryId, paymentAmount) => makePayment(entryId, paymentAmount)}
         isProcessing={processingFixedPayment}
         subscriptionDetails={{
           minPayment: subscription?.plan.minimumInvestment || 0,
