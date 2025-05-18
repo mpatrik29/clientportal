@@ -35,7 +35,7 @@ const FixedPaymentModal = ({
   // Calculate values based on investment mode
   useEffect(() => {
     const goldRate = subscriptionDetails.goldRate || 8000;
-    
+    setEntryId(subscriptionDetails.ledgerEntryId);
     if (isByVolume) {
       // If by volume, goldVolume is the input and we calculate payment
       setPaymentAmount(parseFloat((goldVolume * goldRate).toFixed(2)));
