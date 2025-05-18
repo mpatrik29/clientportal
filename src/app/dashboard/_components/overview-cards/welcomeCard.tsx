@@ -1,3 +1,6 @@
+'use client'
+
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -13,7 +16,13 @@ const WelcomeCard = () => {
 
 
   useEffect(() =>{
-    const name = localStorage.getItem('name') || 'Friend'
+    const name = localStorage.getItem('name') || 'Friend';
+    const email = localStorage.getItem('email') || 'user@gmail.com';
+    const emailVerified = false;
+    const identityVerified = false;
+    const activePlans = 0;
+
+    setUSER(({name, email, emailVerified, identityVerified, activePlans}))
   })
 
   // get the user details from localstorage on page load
@@ -24,7 +33,7 @@ const WelcomeCard = () => {
         {/* Left side - Welcome message */}
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Welcome back, <span className="text-blue-600">{userName}</span>!
+            Welcome back, <span className="text-blue-600">{USER.name}</span>!
           </h2>
           <p className="text-gray-600 mb-4">
             Let's get you started with your investment journey. Here are some quick actions to help you begin.
