@@ -15,6 +15,7 @@ import TradingViewWidget from "@/components/Charts/tradingview/TradingViewWidget
 import StatusCards from "@/components/Dashboard/StatusCards";
 import SubscriptionsTable from "@/components/subscriptions/SubscriptionsTable";
 import WelcomeCard from "./_components/overview-cards/welcomeCard";
+import GoldDashboard from "./_components/goldDashboaed";
 
 type PropsType = {
   searchParams: Promise<{
@@ -28,16 +29,11 @@ export default async function Home({ searchParams }: PropsType) {
 
   return (
     <>
-      <WelcomeCard />
-      <Suspense fallback={<OverviewCardsSkeleton />}>
-        <OverviewCardsGroup />
-      </Suspense>
-      <div className="">
+      <GoldDashboard />
+      
+      <div className="my-5">
         
-        <Suspense fallback={<TopChannelsSkeleton />}>
-          <SubscriptionsTable />
-        </Suspense>
-
+       
         <div className="relative w-full ">
           <img
             src="/images/AdvertBanner.png" // Replace with your banner image path
