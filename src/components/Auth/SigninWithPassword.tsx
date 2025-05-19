@@ -40,7 +40,7 @@ export default function SigninWithPassword() {
       localStorage.setItem("name", user.name);
       localStorage.setItem("email", user.email);
       localStorage.setItem("userId", user.$id);
-
+      localStorage.setItem('emailVerified','true');
 
 
 
