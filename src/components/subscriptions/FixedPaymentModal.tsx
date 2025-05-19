@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react';
 interface FixedPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (data: { amount: number, volume: number, entryId: string }) => void;
   isProcessing: boolean;
   subscriptionDetails?: {
     monthlyInvestment?: number;
     goldRate?: number;
     investmentMode?: string;
     minPayment?: number;
-    ledgerEntryId?:string;
+    ledgerEntryId?: string;
   };
 }
 
@@ -31,11 +31,15 @@ const FixedPaymentModal = ({
   const [goldVolume, setGoldVolume] = useState<number>(0);
   const [consentGiven, setConsentGiven] = useState<boolean>(false);
   const isByVolume = subscriptionDetails.investmentMode === 'byVolume';
-  const [entryId, setEntryId] = useState<string | undefined>(undefined);
+  const [entryId, setEntryId] = useState<string>(subscriptionDetails.ledgerEntryId || '');
+  
   // Calculate values based on investment mode
   useEffect(() => {
     const goldRate = subscriptionDetails.goldRate || 8000;
-    setEntryId(subscriptionDetails.ledgerEntryId);
+    
+    // Update entryId whenever subscriptionDetails change
+    setEntryId(subscriptionDetails.ledgerEntryId || '');
+    
     if (isByVolume) {
       // If by volume, goldVolume is the input and we calculate payment
       setPaymentAmount(parseFloat((goldVolume * goldRate).toFixed(2)));
@@ -43,11 +47,14 @@ const FixedPaymentModal = ({
       // If by amount, payment is the input and we calculate gold
       setGoldVolume(parseFloat((paymentAmount / goldRate).toFixed(3)));
     }
-  }, [paymentAmount, goldVolume, subscriptionDetails.goldRate, isByVolume]);
+  }, [paymentAmount, goldVolume, subscriptionDetails, isByVolume]);
   
   // Reset values when modal opens
   useEffect(() => {
     if (isOpen) {
+      // Always ensure entryId is set from the latest subscriptionDetails
+      setEntryId(subscriptionDetails.ledgerEntryId || '');
+      
       if (isByVolume) {
         // Default gold volume (e.g., 0.5 grams)
         const defaultVolume = subscriptionDetails.monthlyInvestment 
@@ -62,11 +69,12 @@ const FixedPaymentModal = ({
   }, [isOpen, subscriptionDetails, isByVolume]);
   
   const handleConfirm = () => {
-    if (!entryId) {
-      console.error("Entry ID is undefined");
-      return;
-    }
-    onConfirm();
+    // No need to check for undefined entryId as we're providing a default empty string
+    onConfirm({
+      amount: paymentAmount,
+      volume: goldVolume,
+      entryId: entryId
+    });
   };
   
   const handleInputChange = (value: number) => {
@@ -101,7 +109,7 @@ const FixedPaymentModal = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Make a Flexible Payment</h3>
-          <p>Ledger Entry ID: {entryId}</p>
+          <p className="text-sm text-gray-600">Ledger Entry ID: {entryId || 'Not specified'}</p>
         </div>
         
         {/* Content */}
