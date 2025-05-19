@@ -55,7 +55,7 @@ export default function SigninWithPassword() {
       // If a document is returned, store its document ID in localStorage
       if (response.documents.length > 0) {
         localStorage.setItem("activePlans", response.total.toString());
-        localStorage.setItem('emailVerified','true');
+       
       }
 
       // Redirect to /dashboard
