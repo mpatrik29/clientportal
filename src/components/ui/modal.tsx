@@ -35,7 +35,7 @@ export default function SubscriptionModal({ isOpen, onClose, plan }: ModalProps)
       const jwt = await account.createJWT();
       
       // Make API call to subscribe endpoint
-      const response = await fetch('https://6820639972b7e0ad7171.fra.appwrite.run/subscribe', {
+      const response = await fetch('https://6828d8457d8a35bc7801.aw-functions.ip-ddns.comn/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
