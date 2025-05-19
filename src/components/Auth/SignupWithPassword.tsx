@@ -29,7 +29,7 @@ export default function SignupWithPassword() {
 
       // Get the logged-in user's info
       const user = await account.get();
-      
+
       // Store Name, Email, and UserId in localStorage
       localStorage.setItem("name", user.name);
       localStorage.setItem("email", user.email);
@@ -47,13 +47,7 @@ export default function SignupWithPassword() {
         [Permission.read(Role.user(user.$id)), Permission.write(Role.user(user.$id))]
       );
 
-      // Send verification email
-      await account.createVerification(
-        `${window.location.origin}/auth/verify-email`
-      );
-
-      // Update state to show verification card
-      setUserEmail(email);
+      
       setSignupSuccess(true);
     } catch (error) {
       console.error("Error during signup:", error);
@@ -69,7 +63,7 @@ export default function SignupWithPassword() {
 
       // Fetch and set the logged-in user's info
       const user = await account.get();
-      
+
     } catch (error) {
       console.error("Error during login:", error);
     }
@@ -115,12 +109,12 @@ export default function SignupWithPassword() {
           </p>
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-left">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              Please check your inbox and click on the verification link to complete your account setup. 
+              Please check your inbox and click on the verification link to complete your account setup.
               If you don't see the email, please check your spam folder.
             </p>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           <button
             onClick={resendVerification}
@@ -132,7 +126,7 @@ export default function SignupWithPassword() {
               <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-primary border-t-transparent dark:border-white dark:border-t-transparent" />
             )}
           </button>
-          
+
           <Link href="/" className="block w-full">
             <button className="w-full rounded-lg bg-primary p-3 font-medium text-white transition hover:bg-opacity-90">
               Back to Sign In
