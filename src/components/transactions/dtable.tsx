@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
+import { account } from '@/app/appwrite';
 
 const paymentStatusOptions = [
     { value: 'success', label: 'Success' },
@@ -46,17 +47,33 @@ const TransactionsTable = () => {
     });
     const [loading, setLoading] = useState(false);
 
-    const fetchTransactions = async (cursor: string | null = null) => {
+    const fetchTransactions = async (cursor: string | null = null): Promise<void> => {
         setLoading(true);
         try {
+            const jwt = await account.createJWT(); // Ensure you have account instance
+
             const payload = {
                 ...filters,
                 cursor
             };
 
-            const res = await axios.post('/api/transactions', payload);
-            setTransactions(res.data.data.transactions);
-            setPagination(res.data.data.pagination);
+            const res = await fetch('http://68319117000d7a40def3.aw.pure24.co/gettransactions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-appwrite-jwt': jwt.jwt
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                throw new Error(`API error: ${res.status}`);
+            }
+
+            const json = await res.json();
+
+            setTransactions(json.data.transactions);
+            setPagination(json.data.pagination);
         } catch (err) {
             console.error('Error fetching transactions:', err);
         } finally {

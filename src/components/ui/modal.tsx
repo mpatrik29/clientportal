@@ -35,7 +35,7 @@ export default function SubscriptionModal({ isOpen, onClose, plan }: ModalProps)
       const jwt = await account.createJWT();
       
       // Make API call to subscribe endpoint
-      const response = await fetch('https://68319117000d7a40def3.aw.pure24.co/subscribe', {
+      const response = await fetch('http://68319117000d7a40def3.aw.pure24.co/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

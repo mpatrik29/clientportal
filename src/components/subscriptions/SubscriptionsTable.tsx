@@ -46,7 +46,7 @@ export default function SubscriptionsCards() {
     const fetchSubscriptions = async () => {
       try {
         const jwt = await account.createJWT();
-        const response = await fetch('https://68319117000d7a40def3.aw.pure24.co/subscription', {
+        const response = await fetch('http://68319117000d7a40def3.aw.pure24.co/subscription', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
