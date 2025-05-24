@@ -91,9 +91,9 @@ export default function VerifyEmail() {
         </div>
 
         <div className="space-y-4">
-          <Link href="/dashboard" className="block w-full">
+          <Link href="/auth/kyc" className="block w-full">
             <button className="w-full rounded-lg bg-primary p-3 font-medium text-white transition hover:bg-opacity-90">
-              Continue to Dashboard
+              Continue to KYC
             </button>
           </Link>
 
