@@ -168,7 +168,7 @@ const makePayment = async () => {
 
     const jwt = await account.createJWT();
     // Make the API call to process payment
-    const response = await fetch(`https://68319117000d7a40def3.aw.pure24.co//payment/request`, {
+    const response = await fetch(`https://68319117000d7a40def3.aw.pure24.co/payment/request`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
