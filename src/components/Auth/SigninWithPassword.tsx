@@ -44,7 +44,11 @@ export default function SigninWithPassword() {
 
 
 
-
+      const userDetails = await databases.listDocuments(
+          process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
+          process.env.NEXT_PUBLIC_USER_DETAILS_COLLECTION_ID!,
+          [Query.equal("userId",user.$id)]
+      );
 
       // Query the users collection to fetch the document with userId equal to the logged-in user's ID
       const response = await databases.listDocuments(
@@ -52,6 +56,11 @@ export default function SigninWithPassword() {
        '681c313e00156df34b5d',
         [Query.equal("userId", user.$id)]
       );
+
+      if(response.documents.length > 0)
+      {
+         localStorage.setItem("identityVerified", 'true');
+      }
 
       // If a document is returned, store its document ID in localStorage
       if (response.documents.length > 0) {

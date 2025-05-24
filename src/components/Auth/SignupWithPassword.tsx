@@ -47,7 +47,7 @@ export default function SignupWithPassword() {
         [Permission.read(Role.user(user.$id)), Permission.write(Role.user(user.$id))]
       );
 
-      
+      await account.createVerification(`${process.env.BASE_URI}/auth/verify`);
       setSignupSuccess(true);
     } catch (error) {
       console.error("Error during signup:", error);
@@ -73,7 +73,7 @@ export default function SignupWithPassword() {
     try {
       setLoading(true);
       await account.createVerification(
-        `${window.location.origin}/auth/verify-email`
+        `${window.location.origin}/auth/verify`
       );
       // You could add state to show a "Verification email sent" message
     } catch (error) {

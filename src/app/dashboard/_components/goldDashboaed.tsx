@@ -20,7 +20,7 @@ const GoldDashboard = () => {
     const activePlans = parseInt(localStorage.getItem('activePlans') || '0');
     
     // User is considered new if they haven't verified email AND have zero active plans
-    const isNewUser = !emailVerified && activePlans === 0;
+    const isNewUser = !emailVerified || activePlans === 0;
     
     setUser({ name, emailVerified, identityVerified, activePlans, isNewUser });
   }, []);
