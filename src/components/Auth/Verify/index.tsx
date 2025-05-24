@@ -45,7 +45,7 @@ export default function VerifyEmail() {
       // This might require getting the user's email from somewhere
       // await account.createVerification('http://your-app.com/verify-email');
       console.log('Resend verification not implemented yet');
-       await account.createVerification(`${process.env.BASE_URI}/auth/verify`);
+       await account.createVerification('https://main.d2qm6n2yydob2z.amplifyapp.com/auth/verify');
       
     } catch (error) {
       setError(error instanceof Error ? error.message : String(error));

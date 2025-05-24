@@ -47,7 +47,7 @@ export default function SignupWithPassword() {
         [Permission.read(Role.user(user.$id)), Permission.write(Role.user(user.$id))]
       );
 
-      await account.createVerification(`${process.env.BASE_URI}/auth/verify`);
+      await account.createVerification('https://main.d2qm6n2yydob2z.amplifyapp.com/auth/verify');
       setSignupSuccess(true);
     } catch (error) {
       console.error("Error during signup:", error);
