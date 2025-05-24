@@ -80,8 +80,8 @@ const TransactionsTable = () => {
             console.log('Result await jsom: ', typeof(result));
             console.log(result);
 
-            setTransactions(result.data.transactions);
-            setPagination(result.data.pagination);
+            setTransactions(result.transactions);
+            setPagination(result.pagination);
         } catch (err) {
             console.error('Error fetching transactions:', err);
         } finally {
