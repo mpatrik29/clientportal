@@ -53,8 +53,7 @@ export default function SigninWithPassword() {
       // Query the users collection to fetch the document with userId equal to the logged-in user's ID
       const response = await databases.listDocuments(
         process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
-       '681c313e00156df34b5d',
-        [Query.equal("userId", user.$id)]
+       '68319b54000758ae9c24',
       );
 
       if(response.documents.length > 0)
