@@ -47,20 +47,23 @@ export default function SigninWithPassword() {
       const userDetails = await databases.listDocuments(
           process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
           process.env.NEXT_PUBLIC_USER_DETAILS_COLLECTION_ID!,
-          [Query.equal("userId",user.$id)]
       );
 
-      // Query the users collection to fetch the document with userId equal to the logged-in user's ID
-      const response = await databases.listDocuments(
-        process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
-       '68319b54000758ae9c24',
-      );
-
-      if(response.documents.length > 0)
+      console.log(userDetails);
+      if(userDetails.documents.length > 0)
       {
          localStorage.setItem("identityVerified", 'true');
       }
 
+
+      // Query the users collection to fetch the document with userId equal to the logged-in user's ID
+      const response = await databases.listDocuments(
+        process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
+       '681c313e00156df34b5d',
+        [Query.equal("userId", user.$id)]
+      );
+
+      
       // If a document is returned, store its document ID in localStorage
       if (response.documents.length > 0) {
         localStorage.setItem("activePlans", response.total.toString());
