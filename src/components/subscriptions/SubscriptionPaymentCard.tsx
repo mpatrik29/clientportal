@@ -365,7 +365,7 @@ const processFlexiblePayment = async (amount: number) => {
         // Set both states
         setSubscription(subscriptionDetails);
         setSummary(summaryData);
-        setActiveEntryId(summary.upcomingPayment?.$id);
+        setActiveEntryId(summaryData.upcomingPayment?.$id);
         
         // Log the data we just received, not the state variables
         console.log('Subscription details loaded successfully');
