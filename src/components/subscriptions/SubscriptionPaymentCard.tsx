@@ -260,7 +260,7 @@ const processFlexiblePayment = async (amount: number) => {
     };
 
     const jwt = await account.createJWT();
-    const response = await fetch(`http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/payment/request`, {
+    const response = await fetch(`http://68319117000d7a40def3.aw.pure24.co/payment/request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -301,7 +301,7 @@ const processFlexiblePayment = async (amount: number) => {
   
       try {
         const jwt = await account.createJWT();
-        const response = await fetch('http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription/details', {
+        const response = await fetch('http://68319117000d7a40def3.aw.pure24.co/subscription/details', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
