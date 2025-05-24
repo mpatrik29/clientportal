@@ -35,7 +35,7 @@ export default function SubscriptionsCards() {
 
   
   client
-      .setEndpoint('https://appwrite.viewdns.net/v1') // Your API Endpoint
+      .setEndpoint(`${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}`) // Your API Endpoint
       .setProject('68288a22003b3979af8d') // Your project ID
   ;
 
@@ -46,7 +46,7 @@ export default function SubscriptionsCards() {
     const fetchSubscriptions = async () => {
       try {
         const jwt = await account.createJWT();
-        const response = await fetch('http://6828d8457d8a35bc7801.aw-functions.ip-ddns.com/subscription', {
+        const response = await fetch('http://68319117000d7a40def3.aw.pure24.co/subscription', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
