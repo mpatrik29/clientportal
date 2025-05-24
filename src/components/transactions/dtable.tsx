@@ -74,6 +74,11 @@ const TransactionsTable = () => {
 
             const result = await res.json();
             
+            console.log('response on call:', typeof(res));
+            console.log(res);
+
+            console.log('Result await jsom: ', typeof(result));
+            console.log(result);
 
             setTransactions(result.data.transactions);
             setPagination(result.data.pagination);
