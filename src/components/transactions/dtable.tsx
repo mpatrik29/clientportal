@@ -72,10 +72,11 @@ const TransactionsTable = () => {
                 throw new Error(`API error: ${res.status}`);
             }
 
-            const json = await res.json();
+            const result = await res.json();
+            
 
-            setTransactions(json.data.transactions);
-            setPagination(json.data.pagination);
+            setTransactions(result.data.transactions);
+            setPagination(result.data.pagination);
         } catch (err) {
             console.error('Error fetching transactions:', err);
         } finally {
