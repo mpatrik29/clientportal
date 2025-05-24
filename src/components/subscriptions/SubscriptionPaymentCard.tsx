@@ -153,7 +153,7 @@ const makePayment = async () => {
   setProcessingFixedPayment(true);
   try {
     if (!subscription) return;
-    
+    console.log(activeEntryId)
     // Prepare the payment payload
     const paymentPayload = {
       subscriptionId: subscription.$id,
@@ -365,6 +365,7 @@ const processFlexiblePayment = async (amount: number) => {
         // Set both states
         setSubscription(subscriptionDetails);
         setSummary(summaryData);
+        setActiveEntryId(summary.upcomingPayment?.$id);
         
         // Log the data we just received, not the state variables
         console.log('Subscription details loaded successfully');
