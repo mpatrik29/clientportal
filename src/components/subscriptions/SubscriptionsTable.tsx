@@ -53,7 +53,6 @@ export default function SubscriptionsCards() {
             'accept': '*/*',
             'x-appwrite-jwt': jwt.jwt
           },
-          credentials: 'include', // If you need to send cookies
           mode: 'cors' // Explicitly set CORS mode
         });
 

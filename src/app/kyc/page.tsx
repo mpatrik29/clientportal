@@ -26,7 +26,7 @@ export default async function Home({ searchParams }: PropsType) {
 
         
 
-        <KycForm />
+        
 
         
 

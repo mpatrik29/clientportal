@@ -8,6 +8,8 @@ import { MenuIcon } from "./icons";
 import { Notification } from "./notification";
 import { ThemeToggleSwitch } from "./theme-toggle";
 import { UserInfo } from "./user-info";
+import GoldRatesWidget from "@/components/Widget/goldRatesWidget";
+import GoldRatesNavbar from "@/components/Widget/goldRatesWidget";
 
 export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();

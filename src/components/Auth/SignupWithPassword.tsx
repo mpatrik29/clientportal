@@ -15,27 +15,47 @@ export default function SignupWithPassword() {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+    
     try {
-      // Create a new user
-      await account.create(ID.unique(), email, password, name);
+      // Create a new user in Appwrite Auth
+      const authUser = await account.create(ID.unique(), email, password, name);
 
-      // Log in the user
-      await login(email, password);
+      // Log in the user to get session
+      await account.createEmailPasswordSession(email, password);
 
-      // Get the logged-in user's info
+      // Get the logged-in user's info (to ensure we have the latest data)
       const user = await account.get();
 
-      // Store Name, Email, and UserId in localStorage
+      // Store user data in localStorage
       localStorage.setItem("name", user.name);
       localStorage.setItem("email", user.email);
       localStorage.setItem("userId", user.$id);
 
-      // Create the user_roles document with userId and role
+      // Create entry in users collection
+      await databases.createDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
+        "681c3194000cd4f0bff5", // Your users collection ID
+        user.$id, // Use the same ID as the auth user for easy reference
+        {
+          name: user.name,
+          email: user.email,
+          userId: user.$id,
+          isActive: true,
+        },
+        [
+          Permission.read(Role.user(user.$id)), 
+          Permission.write(Role.user(user.$id)),
+          Permission.read(Role.any()), // Allow admins to read user data
+        ]
+      );
+
+      // Create the user_roles document
       await databases.createDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
         process.env.NEXT_PUBLIC_USER_ROLES_COLLECTION_ID!,
@@ -44,40 +64,39 @@ export default function SignupWithPassword() {
           userId: user.$id,
           role: "client",
         },
-        [Permission.read(Role.user(user.$id)), Permission.write(Role.user(user.$id))]
+        [
+          Permission.read(Role.user(user.$id)), 
+          Permission.write(Role.user(user.$id)),
+          Permission.read(Role.any()), // Allow admins to read role data
+        ]
       );
 
+      // Send verification email
       await account.createVerification('https://main.d2qm6n2yydob2z.amplifyapp.com/auth/verify');
+      
       setSignupSuccess(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during signup:", error);
+      setError(error.message || "An error occurred during signup. Please try again.");
+      
+      // If user was created but other operations failed, we should handle cleanup
+      // or inform the user appropriately
     } finally {
       setLoading(false);
-    }
-  };
-
-  const login = async (email: string, password: string) => {
-    try {
-      // Create a session for the user
-      await account.createEmailPasswordSession(email, password);
-
-      // Fetch and set the logged-in user's info
-      const user = await account.get();
-
-    } catch (error) {
-      console.error("Error during login:", error);
     }
   };
 
   const resendVerification = async () => {
     try {
       setLoading(true);
+      setError("");
       await account.createVerification(
         `${window.location.origin}/auth/verify`
       );
-      // You could add state to show a "Verification email sent" message
-    } catch (error) {
+      // You could add a success message state here
+    } catch (error: any) {
       console.error("Error sending verification email:", error);
+      setError("Failed to send verification email. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -105,7 +124,7 @@ export default function SignupWithPassword() {
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Verify Your Email</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">
-            We've sent a verification email to <span className="font-medium">{userEmail}</span>
+            We've sent a verification email to <span className="font-medium">{email}</span>
           </p>
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-left">
             <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -115,11 +134,17 @@ export default function SignupWithPassword() {
           </div>
         </div>
 
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/30 rounded-lg">
+            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+          </div>
+        )}
+
         <div className="space-y-4">
           <button
             onClick={resendVerification}
             disabled={loading}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary bg-transparent p-3 font-medium text-primary transition hover:bg-primary hover:text-white"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary bg-transparent p-3 font-medium text-primary transition hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Resend Verification Email
             {loading && (
@@ -139,6 +164,12 @@ export default function SignupWithPassword() {
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/30 rounded-lg">
+          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+        </div>
+      )}
+
       <InputGroup
         type="text"
         label="Name"
@@ -148,6 +179,7 @@ export default function SignupWithPassword() {
         onChange={(e) => setName(e.target.value)}
         value={name}
         icon={<EmailIcon />}
+        required
       />
 
       <InputGroup
@@ -159,6 +191,7 @@ export default function SignupWithPassword() {
         onChange={(e) => setEmail(e.target.value)}
         value={email}
         icon={<EmailIcon />}
+        required
       />
 
       <InputGroup
@@ -170,6 +203,7 @@ export default function SignupWithPassword() {
         onChange={(e) => setPassword(e.target.value)}
         value={password}
         icon={<PasswordIcon />}
+        required
       />
 
       <div className="mb-6 flex items-center justify-between gap-2 py-2 font-medium">
@@ -193,7 +227,8 @@ export default function SignupWithPassword() {
       <div className="mb-4.5">
         <button
           type="submit"
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90"
+          disabled={loading || !name.trim() || !email.trim() || !password.trim()}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Sign Up
           {loading && (

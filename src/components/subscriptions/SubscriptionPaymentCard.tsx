@@ -308,7 +308,7 @@ const processFlexiblePayment = async (amount: number) => {
             'x-appwrite-jwt': jwt.jwt
           },
           body: JSON.stringify({ subscriptionId: effectiveSubscriptionId }),
-          credentials: 'include'
+          
         });
   
         if (!response.ok) {
