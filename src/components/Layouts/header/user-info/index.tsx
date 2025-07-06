@@ -33,6 +33,7 @@ export function UserInfo() {
 
   const logout = async () => {
     await account.deleteSession("current");
+    localStorage.clear();
     window.location.href = "/";
   };
 

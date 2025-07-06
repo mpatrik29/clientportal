@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CheckCircle, TrendingUp, Gift, Award, ArrowRight, ShieldCheck, Info, FileText, MessageSquare, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const GoldDashboard = () => {
+  const router = useRouter();
   const [user, setUser] = useState({
     name: 'Aswathy',
     emailVerified: false,
@@ -14,6 +16,9 @@ const GoldDashboard = () => {
   });
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && !localStorage.getItem('userId')) {
+      router.replace('/');
+    }
     const name = localStorage.getItem('name') || 'Aswathy';
     const emailVerified = localStorage.getItem('emailVerified') === 'true';
     const identityVerified = localStorage.getItem('identityVerified') === 'true';
