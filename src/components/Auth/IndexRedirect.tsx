@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function IndexRedirect() {
+export default function IndexRedirect(): null {
   const router = useRouter();
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("userId")) {
